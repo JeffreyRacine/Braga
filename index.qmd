@@ -1,0 +1,1600 @@
+---
+title: |
+  | Locally Adaptive Online
+  | Functional Data Analysis
+author:
+- Valentin Patilea$^\dagger$
+- Jeffrey S. Racine$^\ddagger$
+institute:
+- ENSAI & CREST$^\dagger$, valentin.patilea@ensai.fr
+- McMaster University$^\ddagger$, racinej@mcmaster.ca
+date: 04/27/2024
+date-format: full
+editor: source
+bibliography: slides.bib
+link-citations: true
+## Pass knitr options like this (otherwise old-school knitr::opt_chunks$set() in an R chunk)
+knitr:
+  opts_chunk:
+    autodep: true
+    collapse: true
+    cache: true
+    echo: false
+    eval.after: "fig.cap"
+    fig.align: "center"
+    message: false
+    warning: false
+    R.options:
+      np.messages: false
+      plot.par.mfrow: false
+## revealjs options galore 
+format:
+  revealjs:
+    background-transition: fade
+    center: true
+    chalkboard: true
+    css: custom.css
+    embed-resources: false
+    footer: "Locally Adaptive Online FDA | V. Patilea & J. Racine"
+    ## This "hack" is exclusive to using mathjax and allows for plain vanilla
+    ## equation cross referencing using any LaTeX math environment such as
+    ## align, equation, split, etc., i.e., \label{eqfoo} and \eqref{eqfoo} (it
+    ## can also be used for revealjs, html, while standard pdf will naturally
+    ## accept it using defaults - breaks if used for docx, ppt etc.)
+    html-math-method: mathjax
+    include-in-header:
+      - text: |
+          <script>
+          window.MathJax = {
+            tex: {
+              tags: 'ams'
+            }
+          };
+          </script>    
+    incremental: true
+    link-external-newwindow: true
+    ## multiplex: true will create two html files:
+    ## 1. index.html: This is the file you should publish online and that your
+    ## audience should view.
+    ## 2. index-speaker.html: This is the file that you should present from.
+    ## This file can remain on your computer and does not need to be published
+    ## elsewhere.
+    multiplex: true    
+    preview-links: auto
+    self-contained-math: false
+    show-notes: false
+    slide-number: true
+    theme: default
+    touch: true
+    transition: slide
+---
+
+```{r global_options}
+#| include: false
+library(ggplot2)
+library(kableExtra)
+library(fda)
+library(gamair)
+library(np)
+library(latex2exp)
+source("R_scripts_data/func_lib.R")
+```
+
+# Slide Pro-Tips
+
+::: {.nonincremental}
+
+- Link to slides - <a href="https://jeffreyracine.github.io/Kansas">jeffreyracine.github.io/Kansas</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Kansas/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp#/title-slide">Google Translate</a>)
+
+- View **full screen** by pressing the F key (press the Esc key to revert)
+
+- Access **navigation menu** by pressing the M key (click X in navigation menu to close)
+
+- **Advance** using arrow keys
+
+- **Zoom** in by holding down the Alt key in MS Windows, Opt key in macOS or Ctrl key in Linux, and clicking on any screen element (Alt/Opt/Ctrl click again to zoom out)
+
+  <!--
+
+  - Use **copy to clipboard** button for R code blocks (upper right in block) to copy and paste into R/RStudio
+
+  -->
+
+- **Export to a PDF** by pressing the E key (wait a few seconds, then print [or print using system dialog], enable landscape layout, then save as PDF - press the E key to revert)
+
+- Enable drawing tools - chalk **board** by pressing the B key (B to revert), notes **canvas** by pressing the C key (C to revert), press the Del key to erase, press the D key to **download drawings**
+
+:::
+
+::: {.notes}
+Encourage participants to print/save a PDF copy of the slides as there is no guarantee that this material will be there when they realize it might be useful
+:::
+
+# Abstract
+
+One drawback with classical smoothing methods (kernels, splines, wavelets etc.) is their reliance on assuming the degree of smoothness (and thereby assuming continuous differentiability up to some order) for the underlying object being estimated. However, the underlying object may in fact be irregular (i.e., non-smooth and even perhaps nowhere differentiable) and, as well,  the (ir)regularity of the underlying function may vary across its support. Elaborate adaptive methods for curve estimation have been proposed, however, their intrinsic complexity presents a formidable and perhaps even insurmountable barrier to their widespread adoption by practitioners. We contribute to the functional data literature by providing a pointwise MSE-optimal, data-driven, iterative plug-in estimator of “local regularity” and a computationally attractive, recursive, online updating method. In so doing we are able to separate measurement error “noise” from “irregularity” thanks to “replication”, a hallmark of functional data. Our results open the door for the construction of minimax optimal rates, “honest” confidence intervals, and the like, for various quantities of interest.
+
+
+# Outline of Talk
+
+::: {.nonincremental}
+
+- Modern data is often *functional* in nature (e.g., an electrocardiogram (ECG) and many other measures recorded by wearable devices) 
+
+- The analysis of functional data requires *nonparametric methods* 
+
+- However, nonparametric methods rely on *smoothness assumptions* (i.e., require you to assume something we don't know)
+
+- We show how we can learn the degree of (non)smoothness in functional data settings and we separate this from *measurement noise* (this cannot be done with classical data) 
+
+- This allows us to conduct functional data analysis that is optimal (we do this in a statistical framework) 
+
+- We emphasize *online* computation (i.e., how to update when new functional data becomes available)
+
+:::
+
+::: {.notes}
+- Present overview of slides
+
+- Mention appendices and extra material (don't be fooled by slide numbers - for your leisure not to be covered in the allotted time)
+
+- Presuming some may be unfamiliar with functional data elements, start with classical versus function sample elements
+:::
+
+## Classical Versus Functional Data
+
+-   A **defining feature of classical regression analysis** is that 
+
+    - **sample elements are random pairs**, $(y_i,x_i)$
+    
+    - the *function of interest* $\mathbb{E}(Y|X=x)$ is *non-random*
+
+-   A **defining feature of functional data analysis ** is that
+
+    - **sample elements are random functions**, $X^{(i)}$
+    
+    - these are *also functions of interest*
+
+- The following figure (@fig-sampleelements) presents $N=25$ sample elements (classical left plot, functional right plot)
+
+::: {.notes}
+- Point out that we are really in quite a different world when dealing with functions and need to think carefully about the data generating process
+:::
+
+## Classical Versus Functional Data
+
+```{r sampleelements}
+#| label: fig-sampleelements
+#| fig-cap: "Classical Versus Functional Sample Elements ($N=25$)"
+## Simple function to demonstrate classical versus FDA sample elements
+
+set.seed(42)
+
+## Set parameters here
+
+## Regularity parameters for generating data
+
+h_first = 0.5
+h_second = 0.5
+h_slope = 0
+change_point_t = 0.5
+
+## Parameters for generating data from a Brownian motion
+
+sigma = 0.5
+tau = 1
+L = 1
+
+## Set size of batch (N), (average) number of observations for each online curve
+## (M), number of online curves, and grid of points on which to estimate curves
+
+N = 25
+M = 1
+
+t0.grid = seq(0,1,length=100)
+
+## Set the mean function
+
+#mu.func <- function(x) { 1 + x }
+#mu.func <- function(x) { sin(2*pi*x) }
+mu.func <- function(t) {t+exp(-200*(t-0.5)^2)}
+
+## Generate batch data
+
+points_dist <- functional::Curry(runif, min = 0, max = 1)
+
+points_list <- generates_equal_length_points(N = N, m = M,
+                                             distribution = points_dist)
+
+batch <- generate_curves(points_list,
+                         hurst = hurst_logistic,
+                         grid = t0.grid,
+                         sigma = sigma,
+                         tau = tau,
+                         L = L)
+
+curves_batch <- lapply(batch$curves,
+                       function(x) list(t = x$observed$t,
+                                        x = x$observed$x + mu.func(x$observed$t),
+                                        grid_true = x$ideal$t,
+                                        x_true = x$ideal$x + mu.func(x$ideal$t)))
+
+x <- runif(N)
+y <- mu.func(x) + rnorm(N,sd=sigma)
+ylim.xy <- range(y)
+
+ylim.curve <- range(curves_batch[[1]]$x_true)
+if(N>1) {
+  for(n in 2:N) {
+    ylim.curve <- range(ylim.curve,curves_batch[[n]]$x_true)
+  }
+}
+
+par(mfrow=c(1,2))
+plot(x[1:N],y[1:N],pch=19,
+     xlab="X",
+     ylab="Y",
+     ylim=ylim.xy,
+     xlim=c(0,1),
+     main="Classical Sample Elements",
+     panel.first=grid(lty=1))
+
+plot(t0.grid,curves_batch[[1]]$x_true,
+     type="l",
+     ylim=ylim.curve,
+     xlim=c(0,1),
+     main="FDA Sample Elements",
+     xlab="t",
+     ylab="Curve",
+     panel.first=grid(lty=1))
+
+if(N>1) {
+  for(j in 2:N) {
+    lines(t0.grid,curves_batch[[j]]$x_true,col=j,lty=j)
+  }
+}
+
+```
+
+## Functional Data
+
+-   FDA is *the statistical analysis of samples of curves* (i.e., samples of random variables taking values in spaces of functions)
+
+-   FDA has heterogeneous, longitudinal aspects ("individual trajectories")
+
+-   Furthermore, *we never know the curve values at all points*
+
+- The curves are *only available at discrete points* (e.g., $(Y^{(i)}_m , T^{(i)}_m) \in\mathbb R \times [0,1]$)
+
+- The points at which curves are available can *differ across curves*
+
+- The curves may be *measured with error*
+
+- Consider measurements taken from 1 random curve:
+
+    - @fig-nonnoisyfuncall is measured without error from an *irregular* curve
+
+    - @fig-noisyfuncall is measured with error from a *smooth* curve
+
+    - @fig-mfbm displays *varying* (ir)regularity *and* measurement noise
+
+::: {.notes}
+- Stop at "The curves may be *measured with error*"
+
+- Screen mirror RStudio with manipulate_mfbr.R and walk through the issues
+
+- Then proceed to discuss what we know and don't know and "crimes" (assuming smoothness)
+
+- Some researchers [@horvath_kokoszka:2012] presume the curves are measured **without error** at *any t* (unrealistic to say the least, all theory in 5 pages), i.e., they suppose they have the *true curves* at any point
+
+- Sometimes what people do in practice is a **crime**... they smooth discrete points with splines *then* **proceed presuming they have the true curves** (theory is blindly applied forgetting curves are not the true one - there is no theory on FPCA which corresponds to real data)
+:::
+
+## FDA Sample Element (1 Random Function)
+
+```{r noisyfuncdata}
+## Generate data for plotting, plot in next code chunk
+set.seed(42)
+
+## Set parameters here
+
+## Regularity parameters for generating data
+
+h_first = 0.05
+h_second = 0.05
+h_slope = 0
+change_point_t = 0.5
+
+## Parameters for generating data from a multifractional Brownian motion
+
+sigma = 0.0
+tau = 0.0
+L = 0.25
+
+## Set size of batch (N), (average) number of observations for each online curve
+## (M), number of online curves, and grid of points on which to estimate curves
+
+N = 1
+M = 100
+
+t0.grid = seq(0,1,length=2000)
+
+## Set the mean function
+
+mu.func <- function(x) { 1 + x }
+#mu.func <- function(x) { -cos(2*pi*x) }
+#mu.func <- function(t) {t+exp(-200*(t-0.5)^2)}
+
+## Generate batch data
+
+points_dist <- functional::Curry(runif, min = 0, max = 1)
+
+points_list <- generates_equal_length_points(N = N, m = M,
+                                             distribution = points_dist)
+
+batch <- generate_curves(points_list,
+                         hurst = hurst_logistic,
+                         grid = t0.grid,
+                         sigma = sigma,
+                         tau = tau,
+                         L = L)
+
+curves_irregular <- lapply(batch$curves,
+                       function(x) list(t = x$observed$t,
+                                        x = x$observed$x + mu.func(x$observed$t),
+                                        grid_true = x$ideal$t,
+                                        x_true = x$ideal$x + mu.func(x$ideal$t)))
+
+ylim.irregular <- range(curves_irregular[[1]]$x_true,curves_irregular[[1]]$x)
+if(N>1) {
+  for(n in 2:N) {
+    ylim.irregular <- range(ylim.irregular,curves_irregular[[n]]$x_true)
+  }
+}
+
+sigma = 0.25
+tau = 0.0
+L = 0
+
+points_dist <- functional::Curry(runif, min = 0, max = 1)
+
+points_list <- generates_equal_length_points(N = N, m = M,
+                                             distribution = points_dist)
+
+batch <- generate_curves(points_list,
+                         hurst = hurst_logistic,
+                         grid = t0.grid,
+                         sigma = sigma,
+                         tau = tau,
+                         L = L)
+
+curves_regular <- lapply(batch$curves,
+                       function(x) list(t = x$observed$t,
+                                        x = x$observed$x + mu.func(x$observed$t),
+                                        grid_true = x$ideal$t,
+                                        x_true = x$ideal$x + mu.func(x$ideal$t)))
+
+ylim.regular <- range(curves_regular[[1]]$x_true,curves_regular[[1]]$x)
+if(N>1) {
+  for(n in 2:N) {
+    ylim.regular <- range(ylim.regular,curves_regular[[n]]$x_true)
+  }
+}
+```
+
+```{r nonnoisyfuncall}
+#| label: fig-nonnoisyfuncall
+#| fig-cap: "Irregular Function, Data Measured Without Error"
+par(mfrow=c(1,2))
+plot(curves_irregular[[1]]$t,curves_irregular[[1]]$x,
+     type="p",
+     ylim=ylim.irregular,
+     xlab=TeX("$t$"),
+     main="Discrete Measurements for 1 Curve",
+     ylab=TeX("$Y$"),
+     pch=19,
+     panel.first=grid(lty=1))
+plot(t0.grid,curves_irregular[[1]]$x_true,
+     type="l",
+     ylim=ylim.irregular,
+     xlab=TeX("$t$"),
+     main="Irregular Function, Data Measured Without Error",
+     col="grey",
+     ylab=TeX("$Y$"),
+     panel.first=grid(lty=1))
+points(curves_irregular[[1]]$t,curves_irregular[[1]]$x,pch=19)
+```
+
+## FDA Sample Element (1 Random Function)
+
+```{r noisyfuncall}
+#| label: fig-noisyfuncall
+#| fig-cap: "Regular Function, Noisy Data"
+par(mfrow=c(1,2))
+plot(curves_regular[[1]]$t,curves_regular[[1]]$x,
+     type="p",
+     ylim=ylim.regular,
+     xlab=TeX("$t$"),
+     main="Discrete Measurements for 1 Curve",
+     ylab=TeX("$Y$"),
+     pch=19,
+     panel.first=grid(lty=1))
+plot(t0.grid,curves_regular[[1]]$x_true,
+     type="l",
+     ylim=ylim.regular,
+     xlab=TeX("$t$"),
+     main="Smooth Function, Data Measured With Error",
+     ylab=TeX("$Y$"),
+     panel.first=grid(lty=1))
+points(curves_regular[[1]]$t,curves_regular[[1]]$x,pch=19)
+```
+
+## FDA Sample Element (1 Random Function)
+
+```{r mfbm}
+#| label: fig-mfbm
+#| fig-cap: "Irregular Function, Varying Regularity, Noisy Data"
+set.seed(42)
+require(GA)
+require(MASS)
+
+## Set parameters here
+
+## Regularity parameters for generating data
+
+h_first = 0
+h_second = 1
+h_slope = 10
+change_point_t = 0.5
+
+## Parameters for generating data from a multifractional Brownian motion
+
+sigma = 0.25
+tau = 0
+L = 1
+
+## Set size of batch (N), (average) number of observations for each online curve
+## (M), number of online curves, and grid of points on which to estimate curves
+
+N = 1
+M = 50
+
+t0.grid = seq(0,1,length=1000)
+
+## Set the mean function
+
+mu.func <- function(x) { 1 + x }
+#mu.func <- function(x) { sin(2*pi*x) }
+#mu.func <- function(t) {t+exp(-200*(t-0.5)^2)}
+
+## Generate batch data
+
+points_dist <- functional::Curry(runif, min = 0, max = 1)
+
+points_list <- generates_equal_length_points(N = N, m = M,
+                                             distribution = points_dist)
+
+batch <- generate_curves(points_list,
+                         hurst = hurst_logistic,
+                         grid = t0.grid,
+                         sigma = sigma,
+                         tau = tau,
+                         L = L)
+
+curve.Brownian <- lapply(batch$curves,
+                         function(x) list(t = x$observed$t,
+                                          x = x$observed$x + mu.func(x$observed$t),
+                                          grid_true = x$ideal$t,
+                                          x_true = x$ideal$x + mu.func(x$ideal$t)))
+
+## Some plots and true values
+
+true_H <- hurst_logistic(t0.grid)
+C1 <- 3*L**2/((2*true_H+1)*(2*true_H+3))
+C2 <- (3/5)*sigma**2
+h.MSE <- (C2/(2*true_H*C1*M))**(1/(2*true_H+1))
+
+par(mfrow=c(1,1))
+plot(t0.grid,curve.Brownian[[1]]$x_true,
+     type="l",
+     ylim=range(curve.Brownian[[1]]$x_true,curve.Brownian[[1]]$x),
+     main=if(N>1){paste("True Curves ($M$ = ",M,", $N$ = ",N,")",sep="")}else{NULL},
+     sub=TeX("1 draw from $X_t$ discretely sampled with error ($Y^{(i)}(T_i)=X^{(i)}(T_i)+\\epsilon(T_i)$) at randomly spaced $T_i$"),
+     xlab=TeX("$t$"),
+     ylab=TeX("$X^{(i)}(t)$, $Y^{(i)}(t)$"),
+     col="grey",
+     panel.first=grid(lty=1))
+points(curve.Brownian[[1]]$t,curve.Brownian[[1]]$x,
+       col=1,
+       pch=19)
+rug(curve.Brownian[[1]]$t,lwd=2)
+legend("topright",c(TeX("Sample Curve (random draw from $X_t$)"),TeX("Sample Data (curve measured with error at discrete points)")),
+       lty=c(1,NA),
+       pch=c(NA,19),
+       pt.cex=c(NA,.5),
+       col=c("grey",1),
+       bty="n")
+```
+
+::: {.notes}
+- Tell audience we will now look at two real-world datasets
+
+- The first is quite "smooth" looking
+
+- The second much less to
+:::
+
+## FDA Sample Elements (Random Functions)
+
+```{r growth}
+#| label: fig-growth
+#| fig-cap: "Berkeley Growth Study Data"
+par(mfrow=c(1,1))
+with(growth, matplot(age, hgtf[, 1:NCOL(hgtf)], ylab="Height (cm)", xlab = "Age (years)",type="l",
+sub="Heights of 54 girls from age 1 to 18 (ages not equally spaced)",panel.first=grid(lty=1)))
+with(growth,rug(age))
+```
+
+::: {.notes}
+- Point out that the data is unevenly spaced
+
+- 4 measurements years 1-2, 1 per year until 8, 2 per year thereafter
+:::
+
+## FDA Sample Elements (Random Functions)
+
+```{r canWeather}
+#| label: fig-canWeather
+#| fig-cap: "Canadian Weather Study Data"
+require(gamair)
+data(canWeather)
+reg <- unique(CanWeather$region)
+place <- unique(CanWeather$place)
+col <- 1:4;names(col) <- reg
+par(mfrow=c(1,1))
+for (k in 1:35) {
+  if (k==1) plot(1:365,CanWeather$T[CanWeather$place==place[k]],
+            ylim=range(CanWeather$T),type="l",
+            sub="Data on daily mean temperature (C) throughout the year at 35 Canadian locations",
+            col=col[CanWeather$region],
+            xlab="Day of the year",
+            ylab="Temperature (C)",
+            panel.first=grid(lty=1)) else lines(1:365,CanWeather$T[CanWeather$place==place[k]],
+            col=k)
+
+}
+```
+
+::: {.notes}
+- Point out that the data is evenly spaced
+
+- Curve less smooth than previous example
+
+- "Common design" (will come back to this)
+:::
+
+<!--
+
+## Modelling Functional Data
+
+-   Why not use classical linear regression to model each curve?
+
+    - it would be difficult to justify given the nature of the data
+
+-   Why not use existing nonparametric methods to model each curve?
+
+    - it would be hard to justify smoothness assumptions, for one
+
+-   Why not use classical time series or longitudinal/panel analysis
+
+    - the observed points may not be equally spaced
+
+    - the various curves may not be sampled at the same time points
+
+    - the observed points may not be stationary
+
+-   *Ideally*, one would keep the observation unit as collected, and model data as realizations in a suitable space of objects (i.e., space of curves)
+
+::: {.notes}
+- Modern data often come in the form of curves (wearables, health measurements)
+
+- Point out we need a new framework
+:::
+
+# Scope, Highlights, and Related Work
+
+## Project Scope
+
+-   We drill down on *unknown regularity of unknown functions*
+
+-   We exploit a key feature of FDA, namely, *replication*
+
+-   We use data-driven local nonparametric kernel methods
+
+-   Our method adapts, *pointwise*, to
+
+    -   the *local regularity* of the underlying process (i.e., the Hölder exponent $H_t$ defined shortly and to *measurement noise* (i.e., we are able to separate *noise* from *regularity* thanks to *replication*)
+
+    -   the *purpose(s)* of estimation (i.e., $\mu(t)$ versus $\Gamma(s,t)$ defined shortly)
+
+- Our method is computationally tractable:
+
+    - we have processed millions of curves, each containing hundreds of sample points, on a laptop in real-time as new online data arrives
+    
+::: {.notes}
+- If I were to coin a slogan for this talk, it would be "think vertically!"
+
+- Replication can be further exploited (i.e. beyond existing uses)
+:::
+
+
+## Highlights and Related Work
+
+-   We contribute to the literature by providing i) an MSE-optimal, data-driven, iterative plug-in estimator of local regularity and ii) a computationally attractive, recursive, online updating method
+
+-   Related work includes
+
+    -   @gloter_hoffmann:2007, who consider noisy measurements of *one* sample path from a scaled fractional Brownian motion (fBm) with unknown (*scalar*, i.e., *constant*) Hurst parameter and unknown scale with measurements on an equidistant grid and heteroscedastic noise
+
+    -   @gini_nickl:2010, @cai_low_ma:2014, and @ray:2017, who consider the construction of confidence or credible sets for a single curve of unknown regularity (the latter in a Bayesian framework)
+
+    -   @golovkine_klutchnikoff_patilea:2022, who propose a non-smoothing estimator for local regularity of the trajectories of a stochastic process using order statistics (they also adopt a smoothing component, but this relies on an unknown constant $K_0$)
+    
+-->
+
+# Functional Data Setting
+
+## Functional Data
+
+-   Functional data carry information *along* the curves and *among* the curves
+
+-   Consider a second-order stochastic process with continuous trajectories, $X = (X_t : t\in [0,1])$
+
+-   The mean and covariance functions are \begin{equation*}
+    \mu(t) = \mathbb{E}(X_t)\text{ and } \Gamma (s,t) =  \mathbb{E}\left\{ [X_s - \mu(s)]  [X_t-\mu(t)]\right\},\, s,t\in [0,1]
+    \end{equation*}
+
+-   The framework we consider is one where independent sample path realizations $X^{(i)}$, $i=1,2\ldots,N$, of $X$ are measured with error at *discrete* times
+
+-   The data associated with the $i$th sample path $X^{(i)}$ consists of the pairs $(Y^{(i)}_m , T^{(i)}_m) \in\mathbb R \times [0,1]$ generated as \begin{equation*}
+    Y^{(i)}_m = X^{(i)}(T^{(i)}_m) + \varepsilon^{(i)}_m,
+    \qquad 1\leq m \leq M_i
+    \end{equation*}
+
+::: {.notes}
+- In probability theory and related fields, a **stochastic**  or **random process** is a mathematical object usually defined as a family of random variables.
+
+- The term **random function** is also used to refer to a stochastic or random process, because a stochastic process can also be interpreted as a *random element in a function space*. The terms stochastic process and random process are used interchangeably.
+
+- https://en.wikipedia.org/wiki/Stochastic_process
+:::
+
+<!--
+
+## Discrete Sample Points
+
+-   Here, $M_i$ (number of discrete sample points for the $i$th curve) is an integer which can be non-random and common to several $X^{(i)}$, or an independent draw from some positive integer random variable drawn independently of $X$
+
+-   The $T^{(i)}_m$ are the measurement times for $X^{(i)}$, which can be non-random, or be randomly drawn from some distribution, independently of $X$ and the $M_i$
+
+-   The case where $T^{(i)}_m$ are the same for several $X^{(i)}$, and implicitly the $M_i$ are the same too, is the so-called "common design" case
+
+-   The case where the $T^{(i)}_m$ are random is the so-called "independent design" case (our main focus lies here)
+
+::: {.notes}
+- For the theory, we have to let the number of curves $N$ and the expectation of $M_i$ increase, so the data is more like a triangular array (at least for the theory)
+:::
+
+-->
+
+## Measurement Errors and Design
+
+-   The $\varepsilon^{(i)}_m$ are measurement errors, and we allow \begin{equation*}
+    \varepsilon^{(i)}_m = \sigma(T^{(i)}_m) e^{(i)}_m, \quad 1\leq m \leq  M_i
+    \end{equation*}
+
+-   The $e^{(i)}_m$ are independent copies of a centred variable $e$ with unit variance, and $\sigma(T^{(i)}_m)$ is some unknown bounded function which accounts for possibly heteroscedastic measurement errors
+
+-   Our approach applies to both *independent design* and *common design* cases
+
+-   Relative to the number of curves, $N$, the number of points per curve, $M_i$, may be small ("sparse") or large ("dense")
+
+<!--
+
+## Estimation Grid, Batch/Online
+
+-   Let $\mathcal T_0\subset [0,1]$ be a set of points of interest
+
+-   Typically, $\mathcal T_0$ is a refined grid of equidistant points
+
+-   We wish to estimate the following functions:
+
+    -   $\mu(\cdot)$, $\sigma(\cdot)$, $f_T(\cdot)$ on $\mathcal T_0$
+
+    -   $\Gamma(\cdot,\cdot)$ on $\mathcal T_0 \times \mathcal T_0$
+
+-   We are also concerned with computational limitations frequently encountered in this framework (we propose a recursive solution via stochastic approximation algorithms)
+
+-   We will be interested in updating estimates as new functional data arises ("online") as well as performing estimation on an existing set of curves ("batch")
+
+-->
+
+## Replication
+
+-   One key distinguishing feature of FDA is that of "replication" (i.e., *common structure* among curves)
+
+-   Essentially, there is prior information in the $N-1$ sample curves that can be exploited to learn about the $N$th, which is *not* available in, say, classical regression analysis
+
+-   This common structure can be exploited for a variety of purposes
+
+-   For instance, it will allow us to obtain estimates of the *regularity* of the curves that may vary across their domain $t\in[0,1]$ (i.e., *local regularity* estimates)
+
+-   This would not be possible in the classical nonparametric setting where we are restricted to a single curve only
+
+# Local Regularity
+
+::: {.notes}
+Q *Can you provide a definition of “irregular function”?* 
+
+- "It's our meaning."
+
+- "If is non-differentiable, and the regularity of the function (in the sense of Hölder  continuity, where the exponent gives the regularity) can vary, we call that situation an irregular one"
+
+- "I do not have a definition of irregular, because "regular" is too vague."
+
+- "It could be differentiable, Lipschitz continuous, Hölder  continuous, analytic, etc, etc"
+
+- "Irregular is perhaps inappropriate for saying that the curves are not differentiable. **Non-smooth is better**."
+
+- "But here we have the other aspect: the Hölder  exponent H could vary. This means that **we allow different degrees of non smoothness in different points**. I think we may also call such process irregular. We then have to look at the local non-smoothness, and this is what we do because H is estimated in any point t."
+
+- "So in some sense it is both non smooth and irregular."
+:::
+
+##  Overview
+
+-   "**Smoothness** [...] such as the **existence of continuous second derivatives**, is **often imposed for regularization** and is especially useful if nonparametric smoothing techniques are employed, as is prevalent in FDA" [@wang_chiou_muller:2016]
+
+-   This is problematic since imposing an unknown (and global) degree of smoothness may be incompatible with the underlying stochastic process
+
+-   A key feature of our approach is its data-driven locally adaptive nature
+
+-   We consider a meaningful regularity concept for the data generating process based on probability theory
+
+-   We propose simple estimates for *local regularity* and link process regularity to sample path regularity
+
+::: {.notes}
+
+- "[w]e make the assumption that the underlying process generating the data is smooth. The observed data are subject to measurement error that may mask this smoothness" [@levitin_et_al:2007, pg. 137-138]
+
+- "The assumption that a certain number of derivatives exist has been used in most of the analyses that we have considered. In this way we stabilize estimated principal components, regression functions, monotone transformations, canonical weight functions, and linear differential operators.
+
+  Are there more general concepts of regularity that would aid FDA?" [@ramsay_silverman:2005, pg. 380]
+  
+- *minimax optimal rates for mean and covariance functions*,  [@lepski_mammen_spokoiny:1997;@cai_yuan:2011], Cai & Yuam (2010, 11, 12) (see minute 23 of zoom video feb 28 2023)
+
+- An estimator (estimation rule) is called **minimax** if its **maximal risk is minimal** among all estimators. In a sense this means that it is an estimator which performs best in the worst possible case allowed in the problem
+
+- *adaptive confidence bands for nonparametric regression* [@cai_low_ma:2014] "Ideally, an adaptive confidence band should have its size automatically adjusted to the smoothness of the underlying function, while maintaining a prespecified coverage probability. However as we shall show such a goal is impossible even for Lipschitz function classes and hence a new framework for investigating adaptive confidence bands is needed."
+
+- *decrease of the eigenvalues of the covariance operator, which impacts optimal rates for the regression*, for instance [@belhakem_et_al:2021;@hall_horowitz:2007] (people say "suppose we know the rate of decrease of the eigenvalues of the covariance matrix operator of the covariates, $\alpha$, which are functional in this case, but this rate is exactly $2H+1$, so if we know $H$ we know the rate - it is like saying we know there are two derivatives, we know the $\alpha$... how do they know that? They don't!") (minute 30 in the zoom video)
+  
+
+:::
+
+##  Definition
+
+-   A key element of our approach is "local regularity", which here is the largest order *fractional derivative* admitted by the sample paths of $X$ as measured by the value of $H_t$, the "local Hölder exponent", which may vary with $t$
+
+-   More precisely, here "local regularity" is the largest value $H_t$ for which, uniformly with respect to $u$ and $v$ in a neighborhood of $t$, the second order moment of $(X_u-X_v)/|u-v|^{H_t}$ is finite
+
+-   We can then assume \begin{equation*}
+      \mathbb{E}\left[(X_u-X_v)^2\right]\approx L_t^2|u-v|^{2H_t}
+      \end{equation*} when $u$ and $v$ lie in a neighborhood of $t$
+
+-   If a function is smooth (i.e., continuously differentiable), then $H_t=1$, otherwise the function is non-smooth with $0<H_t<1$
+
+-   If a function is a constant function then $L_t=0$, otherwise $L_t>0$
+
+::: {.notes}
+- The second order moment of the **increments**
+
+- People may say "for a Hölder condition we have inequality, but why do you remove the inequality condition and replace with equality" and the response is "because you need equality in order to get estimations for $H$ and $L$ (if no equality, forget it), but the *good news* is that almost all the processes you find in all the probability books do satisfy this with *almost equal* so in fact there is no loss in generality (e.e., derivatives, squares, log(1+...) for gaussian processes do satisfy this with equality) so this is not restrictive at all
+:::
+
+##  Definition
+
+-   Let $[t-\Delta_*/2, t + \Delta_*/2] \cap [0,1]$, and define \begin{align*}
+      \theta(u,v) &= \mathbb{E}\left[ (X_u-X_v)^{2} \right],
+      \quad\text{ hence }\\
+      \theta(u,v) &\approx L_t^2 |u-v|^{2H_t} \quad \text{if }   |u-v| \text{ is small and close to }t
+    \end{align*}
+
+-   Letting $\Delta_* =2^{-1}e^{-\log(\bar M_i)^{1/3}}>0$, $t_1=t-\Delta_*/2$, $t_3= t + \Delta_*/2$, and $t_2=(t_1+t_3)/2$ (the definition of $t_1$ and $t_3$ is adjusted in boundary regions), then we show that \begin{equation*}
+     H_t \approx  \frac{\log(\theta(t_1,t_3)) - \log(\theta(t_1,t_2))}{2\log(2)} \quad \text{if }  |t_3-t_1| \text{ is small}
+    \end{equation*}
+
+-   Moreover, \begin{equation*}
+     L_t \approx \frac{\sqrt{\theta(t_1,t_3)}}{|t_1-t_3|^{H_t} } \quad \text{if }  |t_3-t_1| \text{ is small}
+    \end{equation*}
+
+::: {.notes}
+
+- $\Delta_*$ should go to 0
+
+-  $\Delta_*$ to some power should be larger than the pre-smoothing error (pre-smoothing error should be negligible to $\Delta$ to some power)
+
+- Rate of convergence of pre-smoothing is a power of $1/N$ (power of, say, $2/5$ if $2$ derivatives are assumed to exist, etc.) so we need a power that is a polynomial larger than $1/N$ which is achieved by an exponential -log() with a power that is smaller than 1 (explains why $\Delta_*$ is of this form) should be going to zero slower than any polynomial 1/N
+
+- $\Delta_*$ should be negligible with respect to rate of convergence with respect to $h$
+
+:::
+
+##  Estimation
+
+-   The idea is to estimate $\theta(t_1,t_3)$ and $\theta(t_1,t_2)$ *averaging vertically* over curves
+
+-   Given estimates $\widehat\theta(t_1,t_3)$ and $\widehat\theta(t_1,t_2)$, the estimators of $H_{t}$ and $L_t$ are given by \begin{equation*}
+     \widehat H_t =  \frac{\log(\widehat\theta(t_1,t_3)) - \log(\widehat\theta(t_1,t_2))}{2\log(2)},\quad
+     \widehat L_t = \frac{\sqrt{\widehat\theta(t_1,t_3)}}{|t_1-t_3|^{\widehat H_t} }
+    \end{equation*}
+
+-   The estimator $\widehat{\theta}(t_l,t_j)$ is the average of local curve smoothers, i.e., \begin{equation*}
+    \widehat{\theta}(t_l,t_j)=\frac{1}{N}\sum_{i = 1}^N\left(\widetilde X^{(i)}(t_l)-\widetilde X^{(i)}(t_j)\right)^2
+    \end{equation*}
+
+-   The smoother $\widetilde X^{(i)}(t)$ depends on a bandwidth $h_t$ that, post-iteration, adapts to the local regularity of the underlying process
+
+<!--
+
+##  Nonparametric Smoother
+
+-   To construct $\widehat H_t$ and $\widehat L_t$ on the previous slide, we use a generic kernel-based smoother on *de-meaned* $Y^{(i)}_m$ given by \begin{equation*}
+    \widetilde X^{(i)}(t) = \sum_{m=1}^{M_i} W_{m}^{(i)}(t;h_t) \left(Y^{(i)}_m -\widetilde\mu(T^{(i)}_m)\right),\, \sum_{m=1}^{M_i}W_{m}^{(i)}(t;h_t) =1
+    \end{equation*}
+
+-   The weights $W_{m}^{(i)}(t;h_t)$ are functions of the elements in $\mathcal T_{obs}^{(i)} = \left\{ T_1^{(i)},\ldots, T_{M_i}^{(i)}\right\}$, and depend on a bandwidth $h_t$ which can vary with $t$
+
+-   The main case we have in mind is local polynomial smoothing
+
+-   In the case of non-differentiable functions (our main focus lies here), we consider the local constant NW estimator [@nadaraya:1965; @watson:1964]
+
+##  Nonparametric Smoother
+
+-   The weights of the NW estimator of $X^{(i)}(t)$ are \begin{equation*}
+    W_{m}^{(i)}(t;h_t)  = K\left( \frac{T^{(i)}_m-t}{h_t} \right)\left[\sum_{m'=1}^{M_i} K\left( \frac{T^{(i)}_{m'}-t}{h_t} \right)\right]^{-1},
+    \quad 1\leq m \leq M_i
+    \end{equation*}
+
+-   $K(u)$ is a symmetric, non-negative, bounded kernel with support in $[-1,1]$ [e.g., @epanechnikov:1969]
+
+-   For estimating $\mu(t)$ and $\Gamma(s,t)$ we might entertain an indicator associated with the weights $W_{m}^{(i)}(t;h)$, that is \begin{equation*}
+    w^{(i)}(t;h) = 1 \quad \text{if} \quad \sum_{i=1}^{M_i} \mathbf 1 \left\{\left|T^{(i)}_m-t\right|\leq h\right\} >1, \quad \text{and } 0 \text{ otherwise}
+    \end{equation*}
+
+-   When $w^{(i)}(t;h) = 0$ we *discard* the $i$th curve *vertically* as we lack information local to $t$ (i.e., if all $W_{m}^{(i)}(t;h)=0$, where $0/0\coloneqq0$)
+
+-->
+
+# Assumptions
+
+## Assumptions
+
+-   The stochastic process $X$ is a random function taking values in $L^2 (\mathcal T)$, with $\mathbb E (\| X\|^2) <\infty$
+
+-   The process is *not* deterministic with all sample paths equal to a common path
+
+-   The increments of the process have any moment, and the distributions of the increments are sub-Gaussian
+
+-   The functions $X^{(i)}(t)$ may be nowhere differentiable
+
+-   The process $X$ may be non-stationary with non-stationary increments
+
+-   The measurement errors $\varepsilon^{(i)}$ may be heteroscedastic
+
+-   The mean function $\mu(t)$ may be smoother than the $X^{(i)}(t)$ functions
+
+-   $0<L_t<\infty$ and $0<H_t<1$
+
+::: {.notes}
+
+- In probability theory, a sub-Gaussian distribution is a probability distribution with strong tail decay. Informally, the tails of a sub-Gaussian distribution are dominated by (i.e. decay at least as fast as) the tails of a Gaussian
+
+:::
+
+# Estimation of Local Regularity
+
+## Methodology
+
+-   We take the optimal bandwidth expression for $h_t$ (which depends on $H_t$ and $L_t$) that minimizes *pointwise* MSE using a *general* squared bias term (not the usual term one gets assuming twice differentiable curves)
+
+-   Then, given an initial batch of $N$ curves, we estimate $H_t$ and $L_t$ for each $t\in \mathcal T_0$, which involves an *iterative plug-in* procedure:
+
+    1.  begin with some starting values for the local bandwidths $h_t$
+
+    2.  construct preliminary estimates of each curve for every $t\in \mathcal T_0$ using the data pairs $(Y^{(i)}_m , T^{(i)}_m)$ and local bandwidth starting values
+
+    3.  use these preliminary curve estimates to get starting values for $H_t$ and $L_t$ for every $t\in \mathcal T_0$, and plug these into the optimal bandwidth expression
+
+    4.  repeat 1-3 using the updated plug-in bandwidths; continue iterating $H_T$, and $L_t$ and $h_t$ for every $t\in \mathcal T_0$ until the procedure stabilizes (this occurs quite quickly, typically after 10 or so iterations)
+
+## Details
+
+-   To estimate the $i$th curve at a point $t$ with local Hölder exponent $H_t$ and local Hölder constant $L_t$, the MSE-optimal bandwidth $h^*_{t,HL}$ is \begin{equation*}
+    h^*_{t,HL} =  \left[ \frac{\sigma_t^2 \int K^2(u)du }{2H_t L_t^2\times  \int |u|^{2H_t}|K(u)|du\times f_T(t)}\times \frac{1}{\bar M_i} \right]^{\frac{1}{2H_t+1}}
+    \end{equation*}
+
+-   The kernel function $K(u)$ is provided by the user hence $\int K^2(u)du$ and $\int |u|^{2H_t}|K(u)|du$ can be computed given $H_t$
+
+-   $\sigma_t^2$ is estimated using one-half the squared differences of the two closest $Y^{(i)}$ observations at $t$, averaged across all curves
+
+-   The design density $f_T(t)$ is straightforward to estimate
+
+-   We estimate $H_t$ and $L_t$ for some batch of $N$ curves as outlined on the previous slide, then we recursively update them as online data arrives
+
+## MfBm Example (independent design)
+
+```{r mfbm100}
+set.seed(123)
+require(GA)
+require(MASS)
+
+## Set parameters here
+
+## Regularity parameters for generating data
+
+h_first = 0.25
+h_second = 0.75
+h_slope = 10
+change_point_t = 0.5
+
+## Parameters for generating data from a Multifractional Brownian motion
+
+sigma = 0.50
+tau = 1
+L = 1
+
+## Set size of batch (N), (average) number of observations for each online curve
+## (M), number of online curves, and grid of points on which to estimate curves
+
+N = 100
+M = 100
+
+t0.grid = seq(0,1,length=50)
+
+## Set the mean function
+
+#mu.func <- function(x) { 1 + x }
+mu.func <- function(x) { sin(2*pi*x) }
+#mu.func <- function(t) {t+exp(-200*(t-0.5)^2)}
+
+## Generate batch data
+
+points_dist <- functional::Curry(runif, min = 0, max = 1)
+
+points_list <- generates_equal_length_points(N = N, m = M,
+                                             distribution = points_dist)
+
+batch <- generate_curves(points_list,
+                         hurst = hurst_logistic,
+                         grid = t0.grid,
+                         sigma = sigma,
+                         tau = tau,
+                         L = L)
+
+curves.Brownian <- lapply(batch$curves,
+                       function(x) list(t = x$observed$t,
+                                        x = x$observed$x + mu.func(x$observed$t),
+                                        grid_true = x$ideal$t,
+                                        x_true = x$ideal$x + mu.func(x$ideal$t)))
+
+## Some plots and true values
+
+true_H <- hurst_logistic(t0.grid)
+C1 <- 3*L**2/((2*true_H+1)*(2*true_H+3))
+C2 <- (3/5)*sigma**2
+h.MSE <- (C2/(2*true_H*C1*M))**(1/(2*true_H+1))
+
+## Call the function on the batch, use preliminary starting values for mean
+## function
+
+mu.starting <- mu.pooled.func(curves.Brownian,t0.grid,method="np")
+
+fda.la.Brownian <- fda.la(curves_batch=curves.Brownian,
+                          t.grid=t0.grid,
+                          mu.hat=mu.starting)
+
+H.Brownian <- fda.la.Brownian$H.updated
+```
+
+```{r mfbmcurves}
+#| label: fig-mfbmcurves
+#| fig-cap: "Multifractional Brownian Motion - True Curves"
+ylim <- range(curves.Brownian[[1]]$x_true)
+if(N>1) {
+  for(n in 2:N) {
+    ylim <- range(ylim,curves.Brownian[[n]]$x_true)
+  }
+}
+par(mfrow=c(1,1))
+plot(t0.grid,curves.Brownian[[1]]$x_true,
+     type="l",
+     ylim=ylim,
+     main=TeX(paste("True Curves ($M$ = ",M,", $N$ = ",N,")",sep="")),
+     xlab=TeX("$t$"),
+     ylab="True Curves",
+     panel.first=grid(lty=1))
+if(N>1) {
+  for(n in 2:N) {
+    lines(t0.grid,curves.Brownian[[n]]$x_true,col=n,lty=n)
+  }
+}
+```
+
+## MfBm Example (independent design)
+
+```{r mfbmdata}
+#| label: fig-mfbmdata
+#| fig-cap: "Multifractional Brownian Motion - Data"
+ylim <- range(curves.Brownian[[1]]$x)
+if(N>1) {
+  for(n in 2:N) {
+    ylim <- range(ylim,curves.Brownian[[n]]$x)
+  }
+}
+par(mfrow=c(1,1))
+plot(curves.Brownian[[1]]$t,curves.Brownian[[1]]$x,
+     type="p",
+     ylim=ylim,
+     main=TeX(paste("Data ($M$ = ",M,", $N$ = ",N,")",sep="")),
+     xlab=TeX("$t$"),
+     ylab="Data",
+     panel.first=grid(lty=1))
+if(N>1) {
+  for(n in 2:N) {
+    points(curves.Brownian[[n]]$t,curves.Brownian[[n]]$x,col=n)
+  }
+}
+```
+
+## MfBm Example (independent design)
+
+```{r mfbmiterhHL}
+#| label: fig-mfbmiterhHL
+#| fig-cap: "Multifractional Brownian Motion - Bandwidth Iteration"
+par(mfrow=c(1,1))
+matplot(rbind(fda.la.Brownian$h.HL.starting,fda.la.Brownian$h.HL.updated.mat),
+        xlab="Iteration",
+        ylab=TeX("Iterated bandwidths $h_t$"),
+        main=TeX(paste("Evolution of Bandwidths $h_t$ for $H_t$ and $L_t$ ($M$ = ",M,", $N$ = ",N,", $t$ = ",length(t0.grid)," grid points)",sep="")),
+        type="l",
+        panel.first=grid(lty=1))
+```
+
+<!--
+
+## MfBm Example (independent design)
+
+```{r mfbmiterH}
+#| label: fig-mfbmiterH
+#| fig-cap: "Multifractional Brownian Motion - Local Hölder Exponents Iteration"
+par(mfrow=c(1,1))
+matplot(fda.la.Brownian$H.updated.mat,
+        xlab="Iteration",
+        ylab=TeX("Iterated $H_t$"),
+        main=TeX(paste("Evolution of Local Hölder Exponents $H_t$ ($M$ = ",M,", $N$ = ",N,", $t$ = ",length(t0.grid)," grid points)",sep="")),
+        type="l",
+        panel.first=grid(lty=1))
+```
+
+-->
+
+## MfBm Example (independent design)
+
+```{r mfbmHtrue}
+#| label: fig-mfbmHtrue
+#| fig-cap: "Multifractional Brownian Motion - Estimated and True Regularity"
+par(mfrow=c(1,1))
+plot(t0.grid,fda.la.Brownian$H.updated,
+     ylim=c(0,1),
+     ylab=TeX("$H_t$"),
+     xlab=TeX("t"),
+     main=TeX(paste("Estimated and True $H_t$ ($M$ = ",M,", $N$ = ",N,", $t$ = ",length(t0.grid)," grid points)",sep="")),
+     type="p",
+     pch=19,
+     panel.first=grid(lty=1))
+lines(t0.grid,true_H)
+rug(t0.grid)
+legend("topleft",c("True","Estimated"),lty=c(1,NA),pch=c(NA,19),bty="n")
+```
+
+## Berkeley Growth Study Example (common design)
+
+```{r growthH}
+#| label: fig-growthH
+#| fig-cap: "Berkeley Growth Example - Estimated Regularity"
+require(fda)
+curves.growth <- with(growth,vector(mode="list",length=NCOL(hgtf)))
+t0.grid <- with(growth,age)
+for(j in 1:NCOL(with(growth,hgtf))) {
+  curves.growth[[j]]$x <- with(growth,hgtf[,j])
+  curves.growth[[j]]$t <- t0.grid
+}
+
+mu.starting <- mu.pooled.func(curves.growth,t0.grid,method="np")
+
+fda.la.growth <- fda.la(curves_batch=curves.growth,
+                        t.grid=t0.grid,
+                        t.lb=min(t0.grid),
+                        t.ub=max(t0.grid),
+                        common.design=TRUE,
+                        mu.hat=mu.starting)
+
+H.growth <- fda.la.growth$H.updated
+
+par(mfrow=c(1,1))
+plot(t0.grid,fda.la.growth$H.updated,
+     ylim=c(0,1),
+     ylab=TeX("$H_t$"),
+     xlab=TeX("t"),
+     main=TeX(paste("Estimated $H_t$ (",length(t0.grid)," grid points)",sep="")),
+     type="p",
+     pch=19,
+     panel.first=grid(lty=1))
+rug(t0.grid)
+```
+
+## Canadian Weather Study Example (common design)
+
+```{r canWeatherH}
+#| label: fig-canWeatherH
+#| fig-cap: "Canadian Weather Example - Estimated Regularity"
+require(gamair)
+data(canWeather)
+place <- unique(CanWeather$place)
+curves.canWeather <- vector(mode="list",length=length(place))
+t0.grid <- 1:365
+for(j in 1:length(place)) {
+  curves.canWeather[[j]]$x <- CanWeather$T[CanWeather$place==place[j]]
+  curves.canWeather[[j]]$t <- t0.grid
+}
+
+mu.starting <- mu.pooled.func(curves.canWeather,t0.grid,method="np")
+
+fda.la.canWeather <- fda.la(curves_batch=curves.canWeather,
+                            t.grid=t0.grid,
+                            t.lb=min(t0.grid),
+                            t.ub=max(t0.grid),
+                            common.design=TRUE,
+                            mu.hat=mu.starting)
+
+H.canWeather <- fda.la.canWeather$H.updated
+
+par(mfrow=c(1,1))
+plot(t0.grid,fda.la.canWeather$H.updated,
+     ylim=c(0,1),
+     ylab=TeX("$H_t$"),
+     xlab=TeX("t"),
+     main=TeX(paste("Estimated $H_t$ (",length(t0.grid)," grid points)",sep="")),
+     type="p",
+     pch=19,
+     panel.first=grid(lty=1))
+rug(t0.grid)
+```
+
+## $H_t$ Comparison: growth, canWeather, MfBm
+
+```{r boxplotH}
+#| label: fig-boxplotH
+#| fig-cap: "Estimated Regularity Comparison"
+par(mfrow=c(1,1))
+boxplot(list(growth=H.growth,canWeather=H.canWeather,MfBm=H.Brownian),
+        notch=TRUE,
+        outline=FALSE,
+        ylab=TeX("Regularity $H_t$"),
+        border = NA,
+        xaxt='n',
+        yaxt = "n",
+        frame = FALSE)
+        grid(lty=1)
+boxplot(list(growth=H.growth,canWeather=H.canWeather,MfBm=H.Brownian),
+        notch=TRUE,
+        outline=FALSE,
+        ylab=TeX("Regularity $H_t$"),
+        add = TRUE,
+        ann = FALSE)
+```
+
+# Estimation of $\mu(t)$ and $\Gamma(s,t)$
+
+## Estimation of $\mu(t)$ and $\Gamma(s,t)$
+
+-   In order to estimate $\mu(t)$ at point $t$ and $\Gamma(s,t)$ at points $s$ and $t$, ideally we would use the (unknown, continuous) curves evaluated at these points, hence the *ideal* estimators given $N$ curves would be \begin{align*}
+    \widehat \mu(t)&=\frac{1}{N}\sum_{i=1}^N X^{(i)}(t)\\
+    \widehat \Gamma(s,t)&=\frac{1}{N}\sum_{i=1}^N \left(X^{(i)}(s)-\mu(s)\right)\left(X^{(i)}(t)-\mu(t)\right)
+    \end{align*}
+
+-   Of course, these are *infeasible* as we don't observe the true curves, we observe $M_i$ noisy sample pairs for each curve $X^{(i)}$ measured at *random* points
+
+-   That is, we observe $Y^{(i)}_m=X^{(i)}(T_m^{(i)})+\varepsilon^{(i)}_m$ at discrete irregularly spaced $T_m^{(i)}$, i.e., we observe vectors of pairs $(Y^{(i)}_m,T_m^{(i)})$ of length $M_i$, $i=1,\dots,N$
+
+## Estimation of $\mu(t)$ and $\Gamma(s,t)$ Cont.
+
+-   Our estimates of $\mu(t)$ and $\Gamma(s,t)$, like those of $X^{(i)}$, are local in nature and adapt to $H_t$ and $L_t$
+
+-   It can be shown that to estimate $\mu(t)$ and $\Gamma(s,t)$ at points $s$ and $t$ with local Hölder exponent $H_t$ and local Hölder constant $L_t$, the MSE-optimal bandwidths are given by \begin{align*}
+    h^*_{t,\mu} &=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{2H_t L_t^2\times  \int |u|^{2H_t}|K(u)|du\times f_T(t)}\times \frac{1}{N\bar M_i} \right]^{\frac{1}{2H_t+1}},\\
+    h^*_{t,\Gamma} &=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times  \int |u|^{2H_t}|K(u)|du\times f_T(t)}\times \frac{1}{N\bar M^2_i} \right]^{\frac{1}{2H_t+2}}
+    %% Note this is the "sparse" Gamma bandwidth when N exceeds M (don't want to clutter with min of 2 bandwidths)
+    \end{align*}
+
+-   Using estimates of $H_t$, $L_t$, $\sigma_t$ and $f_T(t)$ from the batch of $N$ curves, we smooth $X^{(i)}(s)$ and $X^{(i)}(t)$ using $\widehat h_{t,\mu}$ and $\widehat h_{t,\Gamma}$ to construct $\widehat\mu(t)$ and $\widehat\Gamma(s,t)$ (here we use, e.g., $\widehat X^{(i)}(t) = \sum_{m=1}^{M_i} W_{m}^{(i)}(t;\widehat h_{t,\Gamma}) Y^{(i)}_m$)
+
+## Example: Estimation of $\Gamma(s,t)$
+
+```{r growthgamma}
+#| label: fig-growthgamma
+#| fig-cap: "Berkeley Growth"
+GA::persp3D(fda.la.growth$t.grid[order(fda.la.growth$t.grid)],
+            fda.la.growth$t.grid[order(fda.la.growth$t.grid)],
+            fda.la.growth$Gamma.hat[order(fda.la.growth$t.grid),order(fda.la.growth$t.grid)],
+            xlab="s",
+            ylab="t",
+            zlab="Estimated Gamma")
+```
+
+## Example: Estimation of $\Gamma(s,t)$
+
+```{r canweathergamma}
+#| label: fig-canweathergamma
+#| fig-cap: "Canadian Weather"
+GA::persp3D(fda.la.canWeather$t.grid[order(fda.la.canWeather$t.grid)],
+            fda.la.canWeather$t.grid[order(fda.la.canWeather$t.grid)],
+            fda.la.canWeather$Gamma.hat[order(fda.la.canWeather$t.grid),order(fda.la.canWeather$t.grid)],
+            xlab="s",
+            ylab="t",
+            zlab="Estimated Gamma")
+```
+
+<!--
+
+## Example: Estimation of $\Gamma(s,t)$
+
+```{r mfbmgamma}
+#| label: fig-mfbmgamma
+#| fig-cap: "Multifractional Brownian Motion"
+GA::persp3D(fda.la.Brownian$t.grid[order(fda.la.Brownian$t.grid)],
+            fda.la.Brownian$t.grid[order(fda.la.Brownian$t.grid)],
+            fda.la.Brownian$Gamma.hat[order(fda.la.Brownian$t.grid),order(fda.la.Brownian$t.grid)],
+            xlab="s",
+            ylab="t",
+            zlab="Estimated Gamma")
+```
+
+-->
+
+<!--
+
+# Curve Recovery
+
+## Curve Recovery
+
+-   Sometimes one needs to estimate a curve, e.g., a new online sample arrives and one is interested in estimating the (unknown) new online curve at some point $t_0\in[0,1]$
+
+-   We wish to build an estimator of $X^{(i)}(t_0)$ making use of information in the noisy measurements $(Y^{(i)}_m,T^{(i)}_m)$ of $X^{(i)}$, and can do so by exploiting information provided by the mean and covariance functions of the process $X$
+
+-   Recall that $\mathcal{T}^{(i)}$ represents the set of design points where the curve $X^{(i)}$ is measured with error ($t_0$ can be an element of $\mathcal{T}^{(i)}$, or not)
+
+-   Let $\mathbb{Y}^{(i)}=(\mathbb{Y}^{(i)}_1,\dots,\mathbb{Y}^{(i)}_{M_i})^T$, and $\mathbb{X}^{(i)}=(\mathbb{X}^{(i)}(T^{(i)}_1),\dots,\mathbb{X}^{(i)}(T^{(i)}_{M_i}))^T$
+
+## Curve Recovery Cont.
+
+-   We use the following vectors and matrices determined by the mean and covariance structure of $X$ and the noise variance: \begin{align*}
+    \mu^{(i)}=\left(\mu(T^{(i)}_m)\right)_{1\le m\le M_i},&\qquad
+    \Gamma^{(i)}=\left(\Gamma(T^{(i)}_m,T^{(i)}_{m'})\right)_{1\le m,m'\le M_i},\\\text{and}\quad
+    \Sigma^{(i)}&=\text{diag}\left(\sigma^2(T^{(i)}_m)\right)_{1\le m\le M_i}
+    \end{align*}
+
+-   The type of prediction we consider has the form ($\widetilde X_{inf}^{(i)}(t_0)$ is infeasible) \begin{equation*}
+    \widetilde X_{inf}^{(i)}(t_0)=\mu(t_0)+\beta_{t_0}^T\left\{\mathbb{Y}^{(i)}-\mu^{(i)}\right\}
+    \end{equation*}
+
+-   Here, $\beta_{t_0}$ is theoretical quantity which depends on unknown quantities, but a feasible version can be readily constructed by noting that \begin{equation*}
+    \beta_{t_0}=\operatorname{Var}^{-1}_{M,T}\left(\mathbb{Y}^{(i)}\right)\operatorname{Cov}_{M,T}\left(\mathbb{Y}^{(i)},X^{(i)}(t_0)\right)
+    \end{equation*}
+
+## Curve Recovery Cont.
+
+-   It can be shown that \begin{equation*}
+    \beta_{t_0}=\left(\Gamma^{(i)}+\Sigma^{(i)}\right)^{-1}\Gamma^{(i)}_{t_0}
+    \end{equation*}
+
+-   Of course, this estimator is infeasible, but given *existing* estimates of $h$, $H$, $L$, $\mu$, $\Gamma$ and $\sigma$, we have a feasible estimator given by \begin{equation*}
+    \widetilde X^{(i)}(t_0)=\widehat\mu(t_0)+\widehat\beta_{t_0}^T\left\{\mathbb{Y}^{(i)}-\widehat\mu^{(i)}\right\}\text{ where } \widehat\beta_{t_0}=\left(\widehat\Gamma^{(i)}+\widehat\Sigma^{(i)}\right)^{-1} \widehat\Gamma^{(i)}_{t_0}
+    \end{equation*}
+
+-   We expect (and simulations underscore) that this estimator is capable of outperforming the individual *local* curve estimates used to construct $H_t$ and $L_t$ in some settings given a sufficient number of curves (i.e., the $\widehat X^{(i)}(t)$ considered previously)
+
+-   We also propose a "combined" estimator that is a *data-driven convex combination* of the reconstructed estimator $\widetilde X^{(i)}(t_0)$ and the individual curve estimator $\widehat X^{(i)}(t_0)$
+
+## Example: Curve Recovery Versus Smooth Estimation
+
+```{r Brownianrecon}
+#| label: fig-Brownianrecon
+#| fig-cap: "MfBm Curve Reconstruction"
+par(mfrow=c(1,1))
+plot(fda.la.Brownian$t.grid,fda.la.Brownian$X.hat.lp[100,],
+     xlab=TeX("$t$"),
+     ylab=TeX("$X^{(i)}(t)$, $Y^{(i)}(t)$"),
+     type="l",
+     panel.first=grid(lty=1),
+     col=3)
+lines(fda.la.Brownian$t.grid,fda.la.Brownian$X.hat[100,],lty=2,col=2,type="l")
+lines(curves.Brownian[[100]]$grid_true,curves.Brownian[[100]]$x_true,lty=1,col="grey",lwd=1.5,type="l")
+points(curves.Brownian[[100]]$t, curves.Brownian[[100]]$x,pch=19)
+legend("topright",c("Reconstructed Estimator","Local Estimator","True Curve","Data"),lty=c(1,2,1,NA),lwd=c(1,1,1.5,NA),col=c(3,2,"grey",1),pch=c(NA,NA,NA,19),bty="n")
+```
+
+-->
+
+# Online Recursive Updating
+
+<!--
+
+## Online Recursive Updating
+
+-   As $N$ increases batch computation can become infeasible
+
+-   Furthermore, new online curves may arrive in real-time
+
+-   We may need to update our batch estimates in real-time, i.e., our estimates of $H_t$, $L_t$, $h_{t,HL}$, $h_{t,\mu}$, $h_{t,\Gamma}$, $\mu(t)$, $\sigma(t)$, $f_T(t)$, and $\Gamma(s,t)$
+
+-   We shall rely on recursive methods, i.e., "stochastic approximation" algorithms, which date to @robbins_munro:1951 and @kiefer_wolfowitz:1952
+
+-   The challenge is a) to avoid batch computation when the number of curves gets unmanageably large, and b) to process online curves in real-time with negligible memory and computational overhead
+
+-   Though recursive updating will necessarily be sub-optimal, if done properly the efficiency loss will be negligible and can be controlled (batch computation on all curves would be optimal but infeasible)
+
+-->
+
+## Online Recursive Updating of Local Hölder Exponent
+
+-   Given observations from a new online curve $X^{(i+1)}$, let the local bandwidth $\widehat h_{t,HL}$ be that based on the estimates of $H_t$ and $L_t$ for recursion $i$ (call this $\widehat h_{t,HL}^{(i)}$)
+
+-   Let $\gamma_{i+1}=(\sum_{j=1}^iM_j)/(\sum_{j=1}^iM_j+M_{i+1})$ (which equals $i/(i+1)$ if $M_1=\dots=M_{i+1}$), and let $\widehat{\theta}_i(u,v)=\frac{1}{i}\sum_{j = 1}^i\left\{\widehat X^{(j)}(u)-\widehat X^{(j)}(v)\right\}^2$
+
+-   The recursively updated estimator of $\theta(u,v)$ using $\widehat h_{t,HL}^{(i)}$ is given by \begin{equation*}
+      \widehat\theta_{i+1}(u,v) = \gamma_{i+1} \widehat\theta_{i}(u,v)+ (1-\gamma_{i+1}) \left\{\widehat{X}^{(i+1)}(u) - \widehat{X}^{(i+1)}(v)\right\}^2
+    \end{equation*}
+
+-   The recursively updated estimators of $H_t$ and $L_t$ are then obtained via \begin{equation*}
+      \widehat H_{t,i+1} = \frac{\log\big( \widehat\theta_{i+1}(t_1,t_3)\big) - \log \big(\widehat\theta_{i+1}(t_1,t_2)\big)}{2\log (2)},\quad\widehat L_{t,i+1} = \frac{\sqrt{\widehat\theta_{i+1}(t_1,t_3)}}{|t_1-t_3|^{\widehat H_{t,i+1}}}
+    \end{equation*}
+
+## Online Recursive Updating of Local Hölder Exponent
+
+-   Updated estimators of $\sigma(t)$ and $f_T(t)$ are recursively computable
+
+-   The recursively updated estimators of $h_{t,HL}$, $h_{t,\mu}$, $h_{t,\Gamma}$ can then be computed (recall they depend on $H_t$, $L_t$, $\sigma(t)$, and $f_T(t)$), and call these $\widehat h_{t,HL}^{(i+1)}$, $\widehat h_{t,\mu}^{(i+1)}$, and $\widehat h_{t,\Gamma}^{(i+1)}$
+
+-   Using $\widehat h_{t,\mu}^{(i+1)}$ or $\widehat h_{t,\Gamma}^{(i+1)}$ we can estimate $X^{(i+1)}(t)$ and recursively update the estimators of $\mu(t)$ or $\Gamma(s,t)$, again using $\gamma_{i+1}$ and @robbins_munro:1951 ($\widehat h_{t,HL}^{(i+1)}$ will start the next recursion for $X^{(i+2)}(t)$, etc.)
+
+-   The "memory footprint" is determined by the grid $\mathcal T_0\subset [0,1]$ (e.g., 100 equidistant points) since we construct estimates of $\mu(\cdot)$, $\sigma(\cdot)$, $f_T(\cdot)$ on $\mathcal T_0$ and estimates of $\Gamma(\cdot,\cdot)$ on $\mathcal T_0 \times \mathcal T_0$
+
+-   Thus, our procedures require only that we retain and update vectors and matrices of length $\mathcal T_0$ and dimension $\mathcal T_0 \times \mathcal T_0$
+
+## Online Recursive Updating Clip
+
+{{< video R_scripts_data/movie.mov width="640" height="640">}}
+
+<!--
+
+## Recursive Updating: Finite-Sample Performance
+
+::: {.panel-tabset}
+
+## Varying $M$, $N=16000$
+
+@tbl-rmseMtable summarizes RMSE performance for 1,000 Monte Carlo replications from a multifractional Brownian motion with covariance $\Gamma(s,t)$ based on $\tau=1$, $L_t=1$, $H_t\in[0.25,0.75]$, $\sigma=0.25$, with $\mu(t)=\sin(2\pi t)$, $t\sim U[0,1]$, *independent design* with $M_i=M$, $N=16000$ online curves, an initial batch of $N=5$ curves to "burn in" values for $H_t$ and $L_t$, and a grid of 100 equidistant points for $\mathcal T_0\in[0,1]$
+
+```{r rmseMtabler}
+#| label: tbl-rmseMtable
+#| tbl-cap: Mean RMSE after final recursion
+load("R_scripts_data/table_skip.RData")
+knitr::kable(table.skip.out[-1,c(1,3,6,8,10,11)],
+             digits=4,
+             row.names=FALSE,
+             escape=FALSE,
+             format="markdown",
+             align='c')
+```
+
+## Varying $N$, $M=200$
+
+@tbl-rmseM200Ntable summarizes the finite sample RMSE performance of two $\Gamma(s,t)$ estimators that either a) discard degenerate points vertically ("skip") or b) use the recovered curves based on the previous estimate of $\Gamma(s,t)$ ("lp"), as the number of online curves processed increases from $N=1000,2000,...,16000$, $M=200$
+
+```{r rmseM200Ntabler}
+#| label: tbl-rmseM200Ntable
+#| tbl-cap: Mean RMSE after final recursion
+load("R_scripts_data/table_M_200.RData")
+knitr::kable(table.foo.200[,c(-2,-4)],
+             digits=4,
+             row.names=FALSE,
+             escape=FALSE,
+             align='c',
+             format="markdown")
+```
+
+:::
+
+-->
+
+# Summary and Appendices
+
+## Summary
+
+-   Though this project has a lot of moving parts, we demonstrate that the approach can deliver consistent computationally feasible FDA
+
+-   Most importantly, our method is *data-driven* and *locally adaptive* to the regularity of the stochastic process
+
+-   We support both batch estimation and online updating using computationally attractive approaches
+
+-   Though not mentioned explicitly so far, the pointwise asymptotics for the individual curve, mean curve, and covariance curve estimates are established and can be used to construct interval estimates etc.
+
+-   R code exists and we expect to be releasing this publicly in the near future
+
+## Appendix A: Resources
+
+-   Books:
+
+    -   @ramsay_silverman:2005, @horvath_kokoszka:2012, @kokoszka_reimherr:2017
+
+-   Review Articles:
+
+    -   @wang_chiou_muller:2016, @reiss_et_al:2017
+
+-   R packages:
+
+    -   fda [@fda], fdapace [@fdapace], fda.usc [@fda.usc]
+
+-   FDA CRAN Task View:
+
+    -   <https://cran.r-project.org/view=FunctionalData>
+
+-   Applications in Economics:
+
+    -   @padilla_segarra_et_al:2020, @tian_renfang:2020
+
+## Appendix B: MfBm Gaussian Processes
+
+-   A Multifractional Brownian Motion [MfBm, @peltier_vehel:1995], say $(W(t))_{t\geq 0}$, with Hurst index function $H_t \in(0,1)$, is a centred Gaussian process with covariance function
+    \begin{equation*}
+    C(s,t) = \mathbb{E}\left[W(s)W(t)\right] =  D(H_s,H_t )\left[ s^{H_s+H_t} +  t^{H_s+H_t} - |t-s|^{H_s+H_t}\right],\, s, t\geq 0,
+    \end{equation*} where
+    \begin{equation*}
+    D(x,y)=\frac{\sqrt{\Gamma (2x+1)\Gamma (2y+1)\sin(\pi x)\sin(\pi y)}} {2\Gamma (x+y+1)\sin(\pi(x+y)/2)}, \, D(x,x) = 1/2,\, x,y >0
+    \end{equation*}
+
+-   Define the Hurst index function given $0 <\underline H \leq \overline H <1$, a change point $t_c \in (0,1)$, and a slope $S>0$, by \begin{equation*}
+    H_t = \underline H + \frac{\overline H - \underline H}{1+\exp(- S (t-t_c))}, \qquad t\in [0,1]
+    \end{equation*}
+
+## Appendix B: MfBm Gaussian Processes Cont.
+
+-   The MfBm data are then generated as follows [@chan_wood:1998]
+
+    -   for each $i$, an integer $M_i$ is generated as a realization of some random variable with mean $\mathfrak m$ (e.g., Poisson), or $M_i$ could be a constant
+
+    -   next, generate $M_i$ independent draws $T_1^{(i)},\ldots,T_{M_i}^{(i)}$ from a uniform random variable on $[0,1]$
+
+    -   using the covariance formula above, the $M_i\times M_i$ matrix $C^{(i)}$ with the entries \begin{equation*}
+        C^{(i)}(T_m^{(i)}, T_{m^\prime}^{(i)}),\quad 1\leq m,m^\prime \leq M_i,
+        \end{equation*} is computed
+
+-   The $M_i$-dimensional vector with components $X^{(i)}(T_n^{(i)})$, $1\leq m \leq M_i$ is the realization of a zero mean Gaussian distribution with covariance matrix $C^{(i)}$
+
+-   While the *increments* for Brownian Motion (i.e., when $H_t=1/2$) are stationary and independent, increments for MfBm are neither
+
+## Appendix C: (Non-)Smooth, (Ir)Regular
+
+-   We use the terms "smooth" and "regular", or their opposites "non-smooth" and "irregular" so we provide some background that might be helpful
+
+-   We use "smoothness" of a function in the standard sense, i.e.,
+
+    -   smoothness is measured by the number of continuous derivatives over some domain (called the "differentiability class")
+
+    -   at minimum, a function is considered smooth if it is "differentiable everywhere" (hence continuous)
+
+    -   at the other extreme, if it also possesses continuous derivatives of all orders it is said to be "infinitely differentiable" and is often referred to as a "$C^{{\infty }}$ function"
+
+-   Thus, "non-smooth" functions are not differentiable everywhere, and in the extreme may be "nowhere differentiable"
+
+## Appendix C: (Non-)Smooth, (Ir)Regular Cont.
+
+-   We use the term "irregular" to refer to non-smooth functions whose "Hölder continuity exponent" varies over some domain
+
+-   We have in mind Hölder continuity where the "Hölder exponent" $H$ defines the regularity of the function (also called its "Hurst" index)
+
+-   But, in addition, we have in mind that such regularity might vary over $t$ hence we write $H_t$ and call this the "local Hölder exponent"
+
+-   The Hölder continuity condition you may be familiar with is $$|X_u-X_v|\le L|u-v|^H,\quad 0<L<\infty,\quad 0<H< 1$$
+
+-   So taking the square we have $$|X_u-X_v|^2\le L^2|u-v|^{2H}$$
+
+::: {.notes}
+
+- Roughly speaking, one can think of Hölder continuous functions with exponent α as functions with bounded fractional derivatives of the the order α
+
+- There is no purpose in considering Hölder continuous functions with exponent greater than one, since any such function is differentiable with zero derivative and therefore is constant
+
+- https://www.math.ucdavis.edu/~hunter/pdes/ch1.pdf
+
+:::
+
+## Appendix C: (Non-)Smooth, (Ir)Regular Cont.
+
+-   Now, $X$ is just a realization of a stochastic process, and the condition is that we put an expectation over all realizations, and since we want to conduct statistical analysis we can't use $\le$, we instead must use $\approx$
+
+-   You need equality in order to get estimates of $H$ and $L$ (if we don't have equality, forget it), but the *good news* is that almost all the processes you find in probability texts do indeed satisfy the *almost equal* condition we use (e.g., derivatives, squares, log(1+...) for Gaussian processes do satisfy this with equality), so in fact there is no loss in generality and this is not restrictive at all
+
+-   Furthermore, we adopt an augmented Hölder continuity condition and allow $H_t$ and $L_t$ to vary on $t\in[0,1]$, thus we work with $$\mathbb{E}\left[(X_u-X_v)^2\right]\approx L_t^2|u-v|^{2H_t},\quad u,v\text{ in some neighborhood of } t$$
+
+::: {.notes}
+
+- Here we use the Kolmogorov Continuity Theorem (video Mar 7 around 35 mins)
+
+- Let $(S,d)$ be some complete metric space, and let $X\colon [0, + \infty) \times \Omega \to S$ be a stochastic process. Suppose that for all times $T > 0$, there exist positive constants $\alpha,  \beta,  K$ such that
+
+  $$\mathbb{E} [d(X_t, X_s)^\alpha] \leq K | t - s |^{1 + \beta}$$
+
+  for all $0 \leq s, t \leq T$. Then there exists a modification $\tilde{X}$ of $X$ that is a continuous process, i.e. a process $\tilde{X}\colon [0, + \infty) \times \Omega \to S$ such that
+
+    - $\tilde{X}$ is sample-continuous;
+    - for every time $t \geq 0$, $\mathbb{P} (X_t = \tilde{X}_t) = 1.$
+
+- Furthermore, the paths of $\tilde{X}$ are locally $\gamma$-Hölder-continuous for every $0<\gamma<\tfrac\beta\alpha$
+
+- NB - In our case (set $\alpha=2$, "we like squares"), $1+\beta=2H$, and $K=L^2$... to obtain equality we let $L^2$ denote the infimum of $K$ such that equality holds
+
+- NB - our $L$ controls the signal-to-noise ratio ($L$-to-$\sigma$ ratio). A larger $L$, other things equal, means the signal is very informative as the amplitude of the oscillations is very large relative to the measurement error (around 56 mins into Mar 7 2023 video)
+
+:::
+
+## Appendix D: Pointwise Local Curve Properties
+
+-   The Hölder class MSE of one kernel smoothed curve at a point $t$, where $M_i$ is the number of observations for the $i$th curve, is given by $$MSE_i\leq C_1(t)h^{2H_t}  + \frac{C_2(t)}{M_i f_T(t) h}$$
+
+-   The constants in the above formula are $C_1(t)=L_t^2\int |u|^{2H_t}|K(u)|du$ and $C_2(t)=\sigma^2_t \int K^2(u)du$, where $K(u)$ is the kernel function
+
+-   Given this, the MSE-optimal bandwidth for curve $i$ at point $t$ is $$h^*_t=\left[\frac{C_2(t)}{2H_tC_1(t)M_i f_T(t)}\right]^{\frac{1}{2H_t+1}}$$
+
+-   Using the Epanechnikov kernel given by $\frac{3}{4}(1-u^2)$ on $[-1,1]$, it can be shown that $C_1(t)=\frac{3L_t^2}{[2H_T+1][2H_t+3]}$ and $C_2(t)=\frac{3}{5}\sigma^2_t$
+
+## Appendix E: Estimation of $\sigma^2_t$
+
+-   To construct a consistent estimator of $\sigma^2_t$ appearing in the MSE-optimal bandwidth formula, we use the following expression: \begin{equation*}
+    \widehat\sigma^2_t=\frac{1}{2N}\sum_{i=1}^N\left(Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)}\right)^2
+    \end{equation*}
+
+-   To obtain this expression, let $m(t)$ denote the order statistic of discrete sample point $m$ indexed at $t$ (i.e., $T^{(i)}_{m(t)}$ is the closest sample design point to $t$, $T^{(i)}_{m(t-1)}$ the second closest, etc.)
+
+-   Recalling that $\varepsilon^{(i)}_m = \sigma(T^{(i)}_m) e^{(i)}_m$, we can express $(Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)})$ in the expression above as follows: \begin{align*}
+    Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)}&=X^{(i)}(T^{(i)}_{m(t)})+\varepsilon^{(i)}_{m(t)}-X^{(i)}(T^{(i)}_{m(t-1)})-\varepsilon^{(i)}_{m(t-1)}\\
+    &=\left(X^{(i)}(T^{(i)}_{m(t)})-X^{(i)}(T^{(i)}_{m(t-1)})\right)+\left(\varepsilon^{(i)}_{m(t)}-\varepsilon^{(i)}_{m(t-1)}\right)
+    \end{align*}
+
+## Appendix E: Estimation of $\sigma^2_t$ Cont.
+
+-   Given continuity of $X^{(i)}(T^{(i)}_{m(t)})$, the first term on line 2 is negligible
+
+-   Given this, and the independence of the $e^{(i)}_{m(t)}$, we have \begin{align*}
+    \mathbb{E}\left(Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)}\right)^2
+    &\approx\mathbb{E}\left(\varepsilon^{(i)}_{m(t)}-\varepsilon^{(i)}_{m(t-1)}\right)^2=2\sigma^2(t),
+    \end{align*} which leads to the expression $\widehat\sigma^2_t=\frac{1}{2N}\sum_{i=1}^N\left(Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)}\right)^2$
+
+-   A similar approach has been used in a classical *homoscedastic* nonparametric setting [@horowitz_spokoiny:2001, Equation (2.9)]
+
+-   We modify this for use in an FDA setting, and by exploiting "replication" (i.e., by averaging vertically *over all curves* at point $t$) we obtain a simple method for computing the measurement noise variance that allows for heteroscedasticity of unknown form
+
+# References (scrollable) {.scrollable}
+

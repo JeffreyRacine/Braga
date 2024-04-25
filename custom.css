@@ -1,0 +1,32 @@
+/* To shrink or zoom a set of slides (say, those formatted in beamer
+   that may have more lines that can fit into one screen in default
+   revealjs) simply adjust per below */
+   
+/* The term “em” stands for ephemeral unit, a concept taken from the
+   field of typography. For example, 1em in a 16-point typeface is 16
+   points, 2em is 32 points, etc. - see
+   https://www.w3.org/Style/Examples/007/units.en.html or
+   https://makersaid.com/what-is-em-css/ */
+
+/* There is a reason to avoid absolute units for other uses than
+   print: You look at different screens from different distances. 1cm
+   on a desktop screen looks small. But the same on a mobile phone
+   directly in front of your eyes looks big. It's better to use
+   relative units, such as em, instead. */
+
+/* The em is simply the font size. In an element with a 2in font, 1em
+   thus means 2in. Expressing sizes, such as margins and paddings, in
+   em means they are related to the font size, and if the user has a
+   big font (e.g., on a big screen) or a small font (e.g., on a
+   handheld device), the sizes will be in proportion. */
+
+/* With Quarto/revealjs (Quarto version 1.3.302 and earlier confirmed)
+   the following will apply a change to all elements of the document
+   (headers, lists, etc.) while using the entire screen appropriately
+   for figures etc. */
+   
+/* It appears that the default for revealjs is 2.5em so < shrinks */   
+
+.reveal {
+    font-size: 1.70em;
+}
