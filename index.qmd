@@ -262,7 +262,7 @@ if(N>1) {
 
 -   FDA has heterogeneous, longitudinal aspects ("individual trajectories")
 
--   Furthermore, *we never know the curve values at all points*
+-   Curves are continuums, so *we never know the curve values at all points*
 
 - The curves are *only available at discrete points* (e.g., $(Y^{(i)}_m , T^{(i)}_m) \in\mathbb R \times [0,1]$)
 
