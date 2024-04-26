@@ -268,7 +268,7 @@ if(N>1) {
     
     - The points at which curves are available can *differ across curves*
 
-- The curves may be *measured with error*
+    - The curves may be *measured with error*
 
 - Consider measurements taken from 1 random curve:
 
