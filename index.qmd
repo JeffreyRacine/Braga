@@ -738,7 +738,7 @@ Q *Can you provide a definition of “irregular function”?*
 
 - "It's our meaning."
 
-- "If is non-differentiable, and the regularity of the function (in the sense of Hölder  continuity, where the exponent gives the regularity) can vary, we call that situation an irregular one"
+- "If the function is non-differentiable, and it's regularity (in the sense of Hölder  continuity, where the exponent gives the regularity) can vary, we call that situation an irregular one"
 
 - "I do not have a definition of irregular, because "regular" is too vague."
 
@@ -799,7 +799,7 @@ Q *Can you provide a definition of “irregular function”?*
 ::: {.notes}
 - The second order moment of the **increments**
 
-- People may say "for a Hölder condition we have inequality, but why do you remove the inequality condition and replace with equality" and the response is "because you need equality in order to get estimations for $H$ and $L$ (if no equality, forget it), but the *good news* is that almost all the processes you find in all the probability books do satisfy this with *almost equal* so in fact there is no loss in generality (e.e., derivatives, squares, log(1+...) for gaussian processes do satisfy this with equality) so this is not restrictive at all
+- People may say "for a Hölder condition we have inequality, but why do you remove the inequality condition and replace with equality" and the response is "because you need equality in order to get estimates for $H$ and $L$ (if no equality, forget it), but the *good news* is that almost all the processes you find in all the probability books do satisfy this with *almost equal* so in fact there is no loss in generality (e.g., derivatives, squares, log(1+...) for gaussian processes do satisfy this with equality) so this is not restrictive at all
 :::
 
 ##  Definition
