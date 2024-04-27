@@ -1,0 +1,12 @@
+Mar 4 2023
+
+Decided to move all scripts for slides plus func_lib.R used in slides
+into an R_scripts directory to avoid any unexpected issues if code is
+inadvertently modified. This way the slides folder is self-supporting.
+
+\movie[width=6cm,height=6cm,showcontrols]{\includegraphics[width=6cm,height=6cm]{../work/sandbox_recursive/hardle_skip_H_0.25_0.75_grid/png/00000000000101.png}}{../work/sandbox_recursive/hardle_skip_H_0.25_0.75_grid/png/movie.mov}
+
+Also moved (Mar 5)
+
+slides.Rmd:load("../work/work_fda_sigma_0.25/summary/table_skip.RData")
+slides.Rmd:load("../work/work_fda_sigma_0.25/summary/table_M_200.RData")
