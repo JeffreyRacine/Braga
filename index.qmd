@@ -8,7 +8,7 @@ author:
 institute:
 - ENSAI & CREST$^\dagger$, valentin.patilea@ensai.fr
 - McMaster University$^\ddagger$, racinej@mcmaster.ca
-date: 04/27/2024
+date: 06/25/2024
 date-format: full
 editor: source
 bibliography: slides.bib
