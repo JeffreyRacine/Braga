@@ -84,7 +84,7 @@ source("R_scripts_data/func_lib.R")
 
 ::: {.nonincremental}
 
-- Link to slides - <a href="https://jeffreyracine.github.io/Kansas">jeffreyracine.github.io/Kansas</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Kansas/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp#/title-slide">Google Translate</a>)
+- Link to slides - <a href="https://jeffreyracine.github.io/Braga">jeffreyracine.github.io/Braga</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Braga/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp#/title-slide">Google Translate</a>)
 
 - View **full screen** by pressing the F key (press the Esc key to revert)
 

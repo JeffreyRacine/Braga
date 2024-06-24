@@ -10,11 +10,11 @@
 <link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="index_files/libs/quarto-contrib/videojs/video.min.js"></script>
 <link href="index_files/libs/quarto-contrib/videojs/video-js.css" rel="stylesheet"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Valentin Patilea^\dagger">
   <meta name="author" content="Jeffrey S. Racine^\ddagger">
-  <title>quarto-inputbbada39b</title>
+  <title>quarto-inputdddc302c</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -36,6 +36,7 @@
     div.csl-bib-body { }
     div.csl-entry {
       clear: both;
+      margin-bottom: 0em;
     }
     .hanging-indent div.csl-entry {
       margin-left:2em;
@@ -181,7 +182,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -357,8 +359,8 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title"><p>Locally Adaptive Online<br>
-Functional Data Analysis</p></h1>
+  <h1 class="title"><div class="line-block">Locally Adaptive Online<br>
+Functional Data Analysis</div></h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -385,7 +387,7 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <h1>Slide Pro-Tips</h1>
 <div>
 <ul>
-<li><p>Link to slides - <a href="https://jeffreyracine.github.io/Kansas">jeffreyracine.github.io/Kansas</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Kansas/?_x_tr_sl=auto&amp;_x_tr_tl=en&amp;_x_tr_hl=en&amp;_x_tr_pto=wapp#/title-slide">Google Translate</a>)</p></li>
+<li><p>Link to slides - <a href="https://jeffreyracine.github.io/Braga">jeffreyracine.github.io/Braga</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Braga/?_x_tr_sl=auto&amp;_x_tr_tl=en&amp;_x_tr_hl=en&amp;_x_tr_pto=wapp#/title-slide">Google Translate</a>)</p></li>
 <li><p>View <strong>full screen</strong> by pressing the F key (press the Esc key to revert)</p></li>
 <li><p>Access <strong>navigation menu</strong> by pressing the M key (click X in navigation menu to close)</p></li>
 <li><p><strong>Advance</strong> using arrow keys</p></li>
@@ -463,7 +465,7 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <li class="fragment"><p><strong>sample elements are random functions</strong>, <span class="math inline">\(X^{(i)}\)</span></p></li>
 <li class="fragment"><p>these are <em>also functions of interest</em></p></li>
 </ul></li>
-<li class="fragment"><p>The following figure (<a href="#/fig-sampleelements">Figure&nbsp;1</a>) presents <span class="math inline">\(N=25\)</span> sample elements (classical left plot, functional right plot)</p></li>
+<li class="fragment"><p>The following figure (<a href="#/fig-sampleelements" class="quarto-xref">Figure&nbsp;1</a>) presents <span class="math inline">\(N=25\)</span> sample elements (classical left plot, functional right plot)</p></li>
 </ul>
 <aside class="notes">
 <ul>
@@ -484,7 +486,9 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <section id="classical-versus-functional-data-1" class="slide level2 center">
 <h2>Classical Versus Functional Data</h2>
 
-<img data-src="index_files/figure-revealjs/fig-sampleelements-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;1: Classical Versus Functional Sample Elements (<span class="math inline">\(N=25\)</span>)</p></section>
+<img data-src="index_files/figure-revealjs/fig-sampleelements-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;1: Classical Versus Functional Sample Elements (<span class="math inline">\(N=25\)</span>)
+</p></section>
 <section id="functional-data" class="slide level2 center">
 <h2>Functional Data</h2>
 <ul>
@@ -498,9 +502,9 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 </ul></li>
 <li class="fragment"><p>Consider measurements taken from 1 random curve:</p>
 <ul>
-<li class="fragment"><p><a href="#/fig-nonnoisyfuncall">Figure&nbsp;2</a> is measured without error from an <em>irregular</em> curve</p></li>
-<li class="fragment"><p><a href="#/fig-noisyfuncall">Figure&nbsp;3</a> is measured with error from a <em>smooth</em> curve</p></li>
-<li class="fragment"><p><a href="#/fig-mfbm">Figure&nbsp;4</a> displays <em>varying</em> (ir)regularity <em>and</em> measurement noise</p></li>
+<li class="fragment"><p><a href="#/fig-nonnoisyfuncall" class="quarto-xref">Figure&nbsp;2</a> is measured without error from an <em>irregular</em> curve</p></li>
+<li class="fragment"><p><a href="#/fig-noisyfuncall" class="quarto-xref">Figure&nbsp;3</a> is measured with error from a <em>smooth</em> curve</p></li>
+<li class="fragment"><p><a href="#/fig-mfbm" class="quarto-xref">Figure&nbsp;4</a> displays <em>varying</em> (ir)regularity <em>and</em> measurement noise</p></li>
 </ul></li>
 </ul>
 <aside class="notes">
@@ -526,15 +530,21 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <section id="fda-sample-element-1-random-function" class="slide level2 center">
 <h2>FDA Sample Element (1 Random Function)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-nonnoisyfuncall-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;2: Irregular Function, Data Measured Without Error</p></section>
+<img data-src="index_files/figure-revealjs/fig-nonnoisyfuncall-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;2: Irregular Function, Data Measured Without Error
+</p></section>
 <section id="fda-sample-element-1-random-function-1" class="slide level2 center">
 <h2>FDA Sample Element (1 Random Function)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-noisyfuncall-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;3: Regular Function, Noisy Data</p></section>
+<img data-src="index_files/figure-revealjs/fig-noisyfuncall-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;3: Regular Function, Noisy Data
+</p></section>
 <section id="fda-sample-element-1-random-function-2" class="slide level2 center">
 <h2>FDA Sample Element (1 Random Function)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-mfbm-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;4: Irregular Function, Varying Regularity, Noisy Data</p><aside class="notes">
+<img data-src="index_files/figure-revealjs/fig-mfbm-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;4: Irregular Function, Varying Regularity, Noisy Data
+</p><aside class="notes">
 <ul>
 <li><p>Tell audience we will now look at two real-world datasets</p></li>
 <li><p>The first is quite “smooth” looking</p></li>
@@ -555,7 +565,9 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <section id="fda-sample-elements-random-functions" class="slide level2 center">
 <h2>FDA Sample Elements (Random Functions)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-growth-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;5: Berkeley Growth Study Data</p><aside class="notes">
+<img data-src="index_files/figure-revealjs/fig-growth-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;5: Berkeley Growth Study Data
+</p><aside class="notes">
 <ul>
 <li><p>Point out that the data is unevenly spaced</p></li>
 <li><p>4 measurements years 1-2, 1 per year until 8, 2 per year thereafter</p></li>
@@ -575,7 +587,9 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
 <section id="fda-sample-elements-random-functions-1" class="slide level2 center">
 <h2>FDA Sample Elements (Random Functions)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-canWeather-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;6: Canadian Weather Study Data</p><aside class="notes">
+<img data-src="index_files/figure-revealjs/fig-canWeather-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;6: Canadian Weather Study Data
+</p><aside class="notes">
 <ul>
 <li><p>Point out that the data is evenly spaced</p></li>
 <li><p>Curve less smooth than previous example</p></li>
@@ -592,7 +606,6 @@ Jeffrey S. Racine<span class="math inline">\(^\ddagger\)</span>
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
-
 <!--
 
 ## Modelling Functional Data
@@ -985,11 +998,15 @@ h^*_{t,HL} =  \left[ \frac{\sigma_t^2 \int K^2(u)du }{2H_t L_t^2\times  \int |u|
 <section id="mfbm-example-independent-design" class="slide level2 center">
 <h2>MfBm Example (independent design)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-mfbmcurves-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;7: Multifractional Brownian Motion - True Curves</p></section>
+<img data-src="index_files/figure-revealjs/fig-mfbmcurves-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;7: Multifractional Brownian Motion - True Curves
+</p></section>
 <section id="mfbm-example-independent-design-1" class="slide level2 center">
 <h2>MfBm Example (independent design)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-mfbmdata-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;8: Multifractional Brownian Motion - Data</p></section>
+<img data-src="index_files/figure-revealjs/fig-mfbmdata-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;8: Multifractional Brownian Motion - Data
+</p></section>
 <section id="mfbm-example-independent-design-2" class="slide level2 center">
 <h2>MfBm Example (independent design)</h2>
 
@@ -998,7 +1015,7 @@ h^*_{t,HL} =  \left[ \frac{\sigma_t^2 \int K^2(u)du }{2H_t L_t^2\times  \int |u|
 ## MfBm Example (independent design)
 
 
-::: {.cell layout-align="center" hash='index_cache/revealjs/fig-mfbmiterH_21f6a87c398a3056b1e2e9e4c284497b'}
+::: {.cell layout-align="center"}
 ::: {.cell-output-display}
 ![Multifractional Brownian Motion - Local Hölder Exponents Iteration](index_files/figure-revealjs/fig-mfbmiterH-1.png){#fig-mfbmiterH fig-align='center' width=960}
 :::
@@ -1006,23 +1023,33 @@ h^*_{t,HL} =  \left[ \frac{\sigma_t^2 \int K^2(u)du }{2H_t L_t^2\times  \int |u|
 
 
 -->
-<img data-src="index_files/figure-revealjs/fig-mfbmiterhHL-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;9: Multifractional Brownian Motion - Bandwidth Iteration</p></section>
+<img data-src="index_files/figure-revealjs/fig-mfbmiterhHL-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;9: Multifractional Brownian Motion - Bandwidth Iteration
+</p></section>
 <section id="mfbm-example-independent-design-3" class="slide level2 center">
 <h2>MfBm Example (independent design)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-mfbmHtrue-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;10: Multifractional Brownian Motion - Estimated and True Regularity</p></section>
+<img data-src="index_files/figure-revealjs/fig-mfbmHtrue-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;10: Multifractional Brownian Motion - Estimated and True Regularity
+</p></section>
 <section id="berkeley-growth-study-example-common-design" class="slide level2 center">
 <h2>Berkeley Growth Study Example (common design)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-growthH-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;11: Berkeley Growth Example - Estimated Regularity</p></section>
+<img data-src="index_files/figure-revealjs/fig-growthH-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;11: Berkeley Growth Example - Estimated Regularity
+</p></section>
 <section id="canadian-weather-study-example-common-design" class="slide level2 center">
 <h2>Canadian Weather Study Example (common design)</h2>
 
-<img data-src="index_files/figure-revealjs/fig-canWeatherH-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;12: Canadian Weather Example - Estimated Regularity</p></section>
+<img data-src="index_files/figure-revealjs/fig-canWeatherH-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;12: Canadian Weather Example - Estimated Regularity
+</p></section>
 <section id="h_t-comparison-growth-canweather-mfbm" class="slide level2 center">
 <h2><span class="math inline">\(H_t\)</span> Comparison: growth, canWeather, MfBm</h2>
 
-<img data-src="index_files/figure-revealjs/fig-boxplotH-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;13: Estimated Regularity Comparison</p></section></section>
+<img data-src="index_files/figure-revealjs/fig-boxplotH-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;13: Estimated Regularity Comparison
+</p></section></section>
 <section>
 <section id="estimation-of-mut-and-gammast" class="title-slide slide level1 center">
 <h1>Estimation of <span class="math inline">\(\mu(t)\)</span> and <span class="math inline">\(\Gamma(s,t)\)</span></h1>
@@ -1054,7 +1081,9 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 <section id="example-estimation-of-gammast" class="slide level2 center">
 <h2>Example: Estimation of <span class="math inline">\(\Gamma(s,t)\)</span></h2>
 
-<img data-src="index_files/figure-revealjs/fig-growthgamma-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;14: Berkeley Growth</p></section>
+<img data-src="index_files/figure-revealjs/fig-growthgamma-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;14: Berkeley Growth
+</p></section>
 <section id="example-estimation-of-gammast-1" class="slide level2 center">
 <h2>Example: Estimation of <span class="math inline">\(\Gamma(s,t)\)</span></h2>
 
@@ -1063,7 +1092,7 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 ## Example: Estimation of $\Gamma(s,t)$
 
 
-::: {.cell layout-align="center" hash='index_cache/revealjs/fig-mfbmgamma_52fc48e71d8786373cfc10902ce5600d'}
+::: {.cell layout-align="center"}
 ::: {.cell-output-display}
 ![Multifractional Brownian Motion](index_files/figure-revealjs/fig-mfbmgamma-1.png){#fig-mfbmgamma fig-align='center' width=960}
 :::
@@ -1118,7 +1147,7 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 ## Example: Curve Recovery Versus Smooth Estimation
 
 
-::: {.cell layout-align="center" hash='index_cache/revealjs/fig-Brownianrecon_d8da94789b45fef89872c6da5bb555c7'}
+::: {.cell layout-align="center"}
 ::: {.cell-output-display}
 ![MfBm Curve Reconstruction](index_files/figure-revealjs/fig-Brownianrecon-1.png){#fig-Brownianrecon fig-align='center' width=960}
 :::
@@ -1126,7 +1155,9 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 
 
 -->
-<img data-src="index_files/figure-revealjs/fig-canweathergamma-1.png" width="960" class="r-stretch quarto-figure-center"><p class="caption">Figure&nbsp;15: Canadian Weather</p></section></section>
+<img data-src="index_files/figure-revealjs/fig-canweathergamma-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p class="caption">
+Figure&nbsp;15: Canadian Weather
+</p></section></section>
 <section>
 <section id="online-recursive-updating" class="title-slide slide level1 center">
 <h1>Online Recursive Updating</h1>
@@ -1174,7 +1205,6 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 <section id="online-recursive-updating-clip" class="slide level2 center">
 <h2>Online Recursive Updating Clip</h2>
 <video id="video_shortcode_videojs_video1" width="640" height="640" class="video-js vjs-default-skin " controls="" preload="auto" data-setup="{}" title=""><source src="R_scripts_data/movie.mov"></video>
-
 <!--
 
 ## Recursive Updating: Finite-Sample Performance
@@ -1186,14 +1216,18 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 @tbl-rmseMtable summarizes RMSE performance for 1,000 Monte Carlo replications from a multifractional Brownian motion with covariance $\Gamma(s,t)$ based on $\tau=1$, $L_t=1$, $H_t\in[0.25,0.75]$, $\sigma=0.25$, with $\mu(t)=\sin(2\pi t)$, $t\sim U[0,1]$, *independent design* with $M_i=M$, $N=16000$ online curves, an initial batch of $N=5$ curves to "burn in" values for $H_t$ and $L_t$, and a grid of 100 equidistant points for $\mathcal T_0\in[0,1]$
 
 
-::: {#tbl-rmseMtable .cell layout-align="center" tbl-cap='Mean RMSE after final recursion' hash='index_cache/revealjs/tbl-rmseMtable_ebb670ebf7b4491cdfb7bb30871d4778'}
+::: {#tbl-rmseMtable .cell layout-align="center" tbl-cap='Mean RMSE after final recursion'}
 ::: {.cell-output-display}
+
+
 | $M$ | $\widehat h_{H_t,L_t}$ | $\widehat H_t$ | $\widehat X^{(i)}$ | $\widehat\mu(t)$ | $\widehat\Gamma(s,t)$ |
 |:---:|:----------------------:|:--------------:|:------------------:|:----------------:|:---------------------:|
 | 100 |         0.0108         |     0.1479     |       0.1899       |      0.0202      |        0.0495         |
 | 200 |         0.0076         |     0.1395     |       0.1622       |      0.0186      |        0.0425         |
 | 400 |         0.0051         |     0.1172     |       0.1384       |      0.0167      |        0.0360         |
 | 800 |         0.0032         |     0.0860     |       0.1185       |      0.0149      |        0.0309         |
+
+
 :::
 :::
 
@@ -1203,8 +1237,10 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 @tbl-rmseM200Ntable summarizes the finite sample RMSE performance of two $\Gamma(s,t)$ estimators that either a) discard degenerate points vertically ("skip") or b) use the recovered curves based on the previous estimate of $\Gamma(s,t)$ ("lp"), as the number of online curves processed increases from $N=1000,2000,...,16000$, $M=200$
 
 
-::: {#tbl-rmseM200Ntable .cell layout-align="center" tbl-cap='Mean RMSE after final recursion' hash='index_cache/revealjs/tbl-rmseM200Ntable_d6e7cd7859ebe25532de6a4e71a7b565'}
+::: {#tbl-rmseM200Ntable .cell layout-align="center" tbl-cap='Mean RMSE after final recursion'}
 ::: {.cell-output-display}
+
+
 |  $N$  | $\widehat\Gamma(s,t)_{\text{skip}}$ | $\widehat\Gamma(s,t)_{\text{lp}}$ |
 |:-----:|:-----------------------------------:|:---------------------------------:|
 | 1000  |               0.1006                |              0.0596               |
@@ -1212,6 +1248,8 @@ h^*_{t,\Gamma} &amp;=  \left[ \frac{\sigma_t^2 \int K^2(u)du }{4H_t L_t^2\times 
 | 4000  |               0.0642                |              0.0297               |
 | 8000  |               0.0524                |              0.0216               |
 | 16000 |               0.0425                |              0.0152               |
+
+
 :::
 :::
 
@@ -1338,7 +1376,7 @@ C^{(i)}(T_m^{(i)}, T_{m^\prime}^{(i)}),\quad 1\leq m,m^\prime \leq M_i,
 <aside class="notes">
 <ul>
 <li><p>Here we use the Kolmogorov Continuity Theorem (video Mar 7 around 35 mins)</p></li>
-<li><p>Let <span class="math inline">\((S,d)\)</span> be some complete metric space, and let <span class="math inline">\(X\colon [0, + \infty) \times \Omega \to S\)</span> be a stochastic process. Suppose that for all times <span class="math inline">\(T &gt; 0\)</span>, there exist positive constants <span class="math inline">\(\alpha, \beta, K\)</span> such that</p>
+<li><p>Let <span class="math inline">\((S,d)\)</span> be some complete metric space, and let <span class="math inline">\(X\colon [0, + \infty) \times \Omega \to S\)</span> be a stochastic process. Suppose that for all times <span class="math inline">\(T &gt; 0\)</span>, there exist positive constants <span class="math inline">\(\alpha,  \beta,  K\)</span> such that</p>
 <p><span class="math display">\[\mathbb{E} [d(X_t, X_s)^\alpha] \leq K | t - s |^{1 + \beta}\]</span></p>
 <p>for all <span class="math inline">\(0 \leq s, t \leq T\)</span>. Then there exists a modification <span class="math inline">\(\tilde{X}\)</span> of <span class="math inline">\(X\)</span> that is a continuous process, i.e.&nbsp;a process <span class="math inline">\(\tilde{X}\colon [0, + \infty) \times \Omega \to S\)</span> such that</p>
 <ul>
@@ -1397,10 +1435,12 @@ Y^{(i)}_{m(t)}-Y^{(i)}_{m(t-1)}&amp;=X^{(i)}(T^{(i)}_{m(t)})+\varepsilon^{(i)}_{
 </section></section>
 <section id="references-scrollable" class="title-slide slide level1 scrollable smaller">
 <h1>References (scrollable)</h1>
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>Locally Adaptive Online FDA | V. Patilea &amp; J. Racine</p>
 </div>
-<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+</div>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-belhakem_et_al:2021" class="csl-entry" role="listitem">
 Belhakem, Ryad, Franck Picard, Vincent Rivoirard, and Angelina Roche. 2021. <span>“Minimax Estimation of Functional Principal Components from Noisy Discretized Functional Data.”</span> https://doi.org/<a href="https://doi.org/10.48550/arXiv.2110.12739">https://doi.org/10.48550/arXiv.2110.12739</a>.
 </div>
@@ -1492,7 +1532,6 @@ Zhou, Yidong, Satarupa Bhattacharjee, Cody Carroll, Yaqing Chen, Xiongtao Dai, J
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': true,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1793,10 +1832,32 @@ Zhou, Yidong, Satarupa Bhattacharjee, Cody Carroll, Yaqing Chen, Xiongtao Dai, J
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp('/' + window.location.host + '/');
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1806,8 +1867,17 @@ Zhou, Yidong, Satarupa Bhattacharjee, Cody Carroll, Yaqing Chen, Xiongtao Dai, J
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1821,7 +1891,11 @@ Zhou, Yidong, Satarupa Bhattacharjee, Cody Carroll, Yaqing Chen, Xiongtao Dai, J
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1861,23 +1935,9 @@ Zhou, Yidong, Satarupa Bhattacharjee, Cody Carroll, Yaqing Chen, Xiongtao Dai, J
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp('/' + window.location.host + '/');
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-          }
-        }
     });
     </script>
-    
+    <script>videojs(video_shortcode_videojs_video1);</script>
     
 
 </body></html>
