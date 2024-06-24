@@ -86,6 +86,8 @@ source("R_scripts_data/func_lib.R")
 
 - Link to slides - <a href="https://jeffreyracine.github.io/Braga">jeffreyracine.github.io/Braga</a> (case sensitive, <a href="https://jeffreyracine-github-io.translate.goog/Braga/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp#/title-slide">Google Translate</a>)
 
+- Link to paper - <a href="https://ideas.repec.org/p/mcm/deptwp/2024-04.html">https://ideas.repec.org/p/mcm/deptwp/2024-04.html</a>
+
 - View **full screen** by pressing the F key (press the Esc key to revert)
 
 - Access **navigation menu** by pressing the M key (click X in navigation menu to close)
